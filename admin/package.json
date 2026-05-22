@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npm run dev:stack",
-    "dev:frontend": "next dev",
+    "dev:frontend": "next dev --webpack",
     "dev:backend": "npm --prefix \"UV Charging\" run dev",
     "dev:stack": "concurrently -k -n BACKEND,FRONTEND -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
     "backend:install": "npm --prefix \"UV Charging\" install",

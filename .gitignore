@@ -3,3 +3,18 @@
 
 # Ignore macOS system files
 .DS_Store
+
+# Node dependencies & build files
+node_modules/
+.next/
+dist/
+build/
+.playwright-mcp/
+
+# Local env files
+.env*.local
+.env
+
+# Screenshots/Temporary assets
+admin_panel_loaded.png
+

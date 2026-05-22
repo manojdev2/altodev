@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* ── Dark theme (default) ── */
+:root {
+  --bg-page: #101828;
+  --bg-card: #1E2A3A;
+  --bg-card-hover: #253347;
+  --bg-table-head: #1A2332;
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #2d3a4a;
+  --bg-input: #1A2332;
+  --bg-modal: #1E2A3A;
+  --bg-badge: rgba(255,255,255,0.08);
+}
+
+html[data-theme="dark"],
+html.dark {
+  --bg-page: #101828;
+  --bg-card: #1E2A3A;
+  --bg-card-hover: #253347;
+  --bg-table-head: #1A2332;
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #2d3a4a;
+  --bg-input: #1A2332;
+  --bg-modal: #1E2A3A;
+  --bg-badge: rgba(255,255,255,0.08);
+}
+
+/* ── Light theme ── */
+html[data-theme="light"],
+html.light {
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-table-head: #f8fafc;
+  --text-primary: #1E2A3A;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --bg-input: #ffffff;
+  --bg-modal: #ffffff;
+  --bg-badge: #f1f5f9;
+}
+
+@theme inline {
+  --color-background: var(--bg-page);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ── Custom scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* ── Prevent horizontal overflow on body ── */
+html, body {
+  overflow-x: hidden;
+}

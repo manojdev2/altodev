@@ -1,0 +1,8 @@
+# Backend (Express API) build
+FROM node:20-alpine
+WORKDIR /app
+COPY "UV Charging"/package*.json ./
+RUN npm install --production
+COPY "UV Charging"/. ./
+EXPOSE 5001
+CMD ["node","index.js"]

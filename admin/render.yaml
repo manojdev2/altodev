@@ -1,0 +1,75 @@
+services:
+  - type: web
+    name: uv-charging-backend
+    env: node
+    plan: starter
+    rootDir: "UV Charging"
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_SECRET_EXPIRES_IN
+        value: "24h"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: SSLCOMMERZ_STORE_ID
+        sync: false
+      - key: SSLCOMMERZ_STORE_PASSWORD
+        sync: false
+      - key: SSLCOMMERZ_IS_LIVE
+        value: "false"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        fromService:
+          name: uv-charging-frontend
+          type: web
+          property: url
+      - key: BACKEND_URL
+        fromService:
+          name: uv-charging-backend
+          type: web
+          property: url
+
+  - type: web
+    name: uv-charging-frontend
+    env: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: /api/v1
+      - key: BACKEND_ORIGIN
+        fromService:
+          name: uv-charging-backend
+          type: web
+          property: url
+      - key: BACKEND_URL
+        fromService:
+          name: uv-charging-backend
+          type: web
+          property: url
+      - key: NEXT_PUBLIC_IMGBB_API_KEY
+        sync: false
+      - key: NODE_ENV
+        value: production

@@ -1,0 +1,564 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>EV ChargeFinder Documentation</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">    
+    <link rel="shortcut icon" href="assets/images1/logo.png">  
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <!-- FontAwesome JS -->
+    <script defer src="assets/fontawesome/js/all.js"></script>
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">   
+    <!-- Plugins CSS -->    
+    <link rel="stylesheet" href="assets/plugins/prism/prism.css">
+    <link rel="stylesheet" href="assets/plugins/elegant_font/css/style.css"> 
+            <link rel="stylesheet" href="app.css">  
+      
+    <!-- Theme CSS -->
+    <link id="theme-style" rel="stylesheet" href="assets/css/styles.css">
+    
+</head> 
+
+
+
+<body class="body-blue">
+    <div class="page-wrapper">
+        <!-- ******Header****** -->
+      
+        <div class="doc-wrapper">
+            <div class="container">
+                <div id="doc-header" class="doc-header text-center">
+                    <h1 class="">EV ChargeFinder – EV &amp; Fuel Station Booking App | Admin Panel | Slot Booking | Multi-Fuel Support <a style="color:rgb(7, 3, 235)">Documentation.</a></h1>
+                
+                </div><!--//doc-header-->
+                  <div class="sticky top-0 z-10 flex-shrink-0 h-16 bg-white flex">
+                   
+                </div>
+                <div class="doc-body row">
+                    <div class="doc-content col-md-9 col-12 order-1">
+                        <div class="content-inner">
+                            
+                                     <section id="introduction" class="doc-section">
+                                 
+                                <h2 class="section-title">Author Message</h2>
+                                <div class="section-block">
+                                    <h3 style="color: #28BF62; ">Dear Customer, Please Follow the Instruction of Documentation for Steup the App By Itself. </h3> 
+
+                                    <!-- <h3 style="color: #28BF62; ">Dear Customer, Please Follow the Instruction of Documentation for Steup the App By Itself. <br> </br>Or If you Want to Take Installation Service, You can Contact Via OneLancer.net , WhatsApp or Skype Or Email, Installation Service Will Extra Chargeable. </br>
+                                    <br> WhatsApp :- +91 8819988065 <br> Skype :- Will_Dev <br><p>Onelancer.net :- <a href="https://onelancer.net/profile/Smart_Solution" target="_blank" rel="noopener noreferrer">Click Here</a></p> </h3>  -->
+                                </div>
+                            </section><!--//doc-section-->
+                            <section id="introduction" class="doc-section">
+                                <h2 class="section-title">Introduction</h2>
+                                <div class="section-block">
+                                    <p>Thank you for purchasing the EV ChargeFinder solution. This platform focuses on the full EV charging and fuel distribution journey: drivers discover nearby charging hubs or petrol/octane/diesel stations, reserve a slot before leaving home, and pay according to the reserved duration once they plug in or refuel. The experience is intentionally simple—pick a station, lock a slot, arrive on time, and the charger or pump is ready with the correct tariff applied.
+                                    </p>
+                                    <p>The same workflow works for mixed fleets too. A rider booking octane for a bike or a logistics company lining up multiple diesel trucks can build an online serial queue, receive real-time reminders, and adjust the booking window if their schedule changes. The admin panel manages inventory, pricing slabs, wallets, loyalty rewards, push alerts, and reporting so you can operate EV charging and traditional fuels from a single console.</p>
+                                </div>
+                            </section><!--//doc-section-->
+
+                            <section id="android" class="doc-section">
+                                <h2 class="section-title">App Configuration &amp; Generate .apk for Google play store</h2>
+                                <p>In installing the Android application it will be more complex, follow the steps correctly so that the application can run properly.</p>
+                                <div id="bstep1"  class="section-block">
+                                    <h3 class="block-title">1. How to open project</h3>
+                                    <div class="code-block">
+                                        <ul class="list">
+                                            <li>open Android Studio > Open an Existing Android Studio Project > Select Your Project build.gradle file > ok</li>
+                                        </ul>
+                                        <img class="img-fluid" src="assets/images/projectopen1.png" alt="elegant icons" width="720px" />
+                                        <br>
+                                        <br>
+                                        <ul class="list">
+                                            <li>browse to directory where you place "city_service_app" project and click OK.</li>
+                                        </ul>
+                                        <img class="img-fluid" src="assets/images/2.png" alt="elegant icons" width="720px" />
+                                    </div><!--//code-block-->
+                                </div><!--//section-block-->
+
+                                <div id="bstep2"  class="section-block">
+                                    <h3 class="block-title">2. How to change package name</h3>
+                                    <div class="code-block">
+                                        <p>For example, if you want to change com.example.app to Com.awesome.appthen</p>
+                                        <p>In your Project, Click ctrl+ shift+ R. </p>
+
+                                        <p>Find Old Package Name com.classified.flutter and Replace with yours com.yourapp.name</p>
+
+                                        <img class="img-fluid" src="assets/images/packagechange.png" alt="elegant icons" width="720px" />
+                                        <br>
+                                        
+                                        <br>
+                                    
+                                        <h5 class="block-title">NOTE**: make sure the package name of each application matches what you entered when registering your application with firebase.</h5>
+                                        
+                                     
+                                        
+                                    </div><!--//code-block-->
+                                </div><!--//section-block-->
+
+                           
+                                <div id="bstep3"  class="section-block">
+                                    <h3 class="block-title">3. How to change app name</h3>
+                                    <div class="code-block">
+                                        <ul class="list">
+                                            <li>For Android Change Apps Name</li>
+                                            <li>App>Main>AndroidManifest.xm</li>
+                                        </ul>
+                                        <img class="img-fluid" src="assets/images1/androidname.png" alt="elegant icons" width="720px" />
+                                        <br>
+                                        <br>
+
+                                        <ul class="list">
+                                            <li>For IOS Change Apps Name</li>
+                                            <li>IOS>Runner>Info.plist </li>
+                                        </ul>
+                                        <img class="img-fluid" src="assets/images1/iosnameChange.png" alt="elegant icons" width="720px" />
+                                    </div><!--//code-block-->
+                                </div><!--//section-block-->
+
+                                <div id="bstep4"  class="section-block">
+                                    <h3 class="block-title">4. How to change app icon</h3>
+                                    <div class="code-block">
+                                        <ul class="list">
+                                            <li>open Android Studio > Project > assets/images/logo.png</li>
+                                            <li>and Replace with your logo with same name</li>
+                                        </ul>
+                                        
+                                        <img class="img-fluid" src="assets/images1/appsLogo.png" alt="elegant icons" width="720px" />
+                                    <br>
+
+                                    </div><!--//code-block-->
+                                </div><!--//section-block-->
+
+                                <div id="bstep5"  class="section-block">
+                                    <h3 class="block-title">5. How to insert url</h3>
+                                    <div class="code-block">
+                                        <p>For example, if you want to change Base Url https://uv-charging-backend-1.onrender.com to https://yourdomain.com</p>
+                                        <p>Just you need to change base url iwht your indtead of default.</p>
+
+                                        <br>
+                                         <img class="img-fluid" src="assets/images1/url.png" alt="elegant icons" width="720px" />
+                                        <br>
+                                      
+                                       
+                                        
+                                    </div><!--//code-block-->
+                                </div><!--//section-block-->
+
+                                <div id="bstep6" class="section-block">
+                                    <h3 class="block-title">6. Generate signed APK then create new key store</h3>
+                                    <div class="code-block">
+                                        <ul class="list">
+                                            <li>click build > generate signed bundle/APK</li>
+                                        </ul>
+                                        <img class="img-fluid" src="assets/images/release_apk.png" alt="elegant icons" width="720px" />
+                                        <br>
+                                        <br>
+                                        <img class="img-fluid" src="assets/images/signedapk.png" alt="elegant icons" width="720px" />
+                                        <br>
+                                        <br>
+                                        <ul class="list">
+                                            <li>make new key store to get "JKS FILE"</li>
+                                        </ul>
+                                        <img class="img-fluid" src="assets/images/fillkeystore.png" alt="elegant icons" width="720px" />
+                                    </div><!--//code-block-->
+                                </div><!--//section-block-->
+
+                              
+
+                                
+
+                            </section><!--//doc-section-->
+
+                            <section id="ios" class="doc-section">
+                     
+
+
+
+
+                      <div id="ios"  class="section-block">
+                        <h3 class="block-title">1. Gnerate .ipa file for iOS</h3>
+                        <div class="code-block">
+                            <p>To create a .ipa file, Build and release an iOS app</p>
+                            <ol>
+                                <li>
+                                    <p>Register your app on App Store Connect</p>
+                                    <ul>
+                                        <li>Register a Bundle ID, &nbsp;see the <a href="https://flutter.dev/docs/deployment/ios#register-a-bundle-id" rel="nofollow noreferrer">Register a Bundle ID</a></li>
+                                        <li>Create an application record on App Store Connect, see the <a href="https://flutter.dev/docs/deployment/ios#create-an-application-record-on-app-store-connect" rel="nofollow noreferrer">Create an application record on App Store</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <p>Review Xcode project settings, see the <a href="https://flutter.dev/docs/deployment/ios#review-xcode-project-settings" rel="nofollow noreferrer">Xcode project settings</a></p>
+                                </li>
+                                <li>
+                                    <p>Create a build archive</p>
+                                    <p>In Xcode, configure the app version and build:</p>
+                                    <ol>
+                                        <li>
+                                            <p>In Xcode, open Runner.xcworkspace in your app&rsquo;s ios folder.</p>
+                                        </li>
+                                        <li>
+                                            <p>Select Product &gt; Scheme &gt; Runner.</p>
+                                        </li>
+                                        <li>
+                                            <p>Select Product &gt; Destination &gt; Generic iOS Device.</p>
+                                        </li>
+                                        <li>
+                                            <p>Select Product &gt; Archive. (This process will take a little longer)</p>
+                                        </li>
+                                        <li>
+                                            <p>After finishing the process - Click the &quot;Distribute App&quot; button on right panel</p>
+                                        </li>
+                                        <li>
+                                            <p>Then follow the below steps</p>
+                                        </li>
+                                    </ol>
+                                </li>
+                            </ol>
+                            <ul>
+                                <li style="margin-left: 80px;"><strong>Step 1</strong></li>
+                                  <img src="assets/images/i6.png" alt="Import">
+                                <li style="margin-left: 80px;"><strong>Step 2</strong></li>
+                                  <img src="assets/images/i62.png" alt="Import">
+                                <li style="margin-left: 80px;"><strong>step 3</strong></li>
+                                  <img src="assets/images/i63.png" alt="Import">
+                                <li style="margin-left: 80px;"><strong>Step 4</strong></li>
+                                    <img src="assets/images/i64.png" alt="Import">
+                                <li style="margin-left: 80px;"><strong>step 5&nbsp;</strong></li>
+                                  <img src="assets/images/i65.png" alt="Import">
+                                <li style="margin-left: 80px;"><strong>Step 6</strong></li>
+                                   <img src="assets/images/i67.png" alt="Import">
+                            </ul>
+                            
+                            
+                            <hr>
+                        </div><!--//code-block-->
+                             </div><!--//section-block-->
+
+
+
+
+
+                            </section><!--//doc-section-->
+
+                            <section id="google-maps" class="doc-section">
+                                <h2 class="section-title">Google Maps API Key Setup</h2>
+                                <div id="gm-account" class="section-block">
+                                    <h3 class="block-title">Create a Google Cloud project &amp; enable billing</h3>
+                                    <ol>
+                                        <li>Visit <a href="https://cloud.google.com/maps-platform" target="_blank" rel="noopener">cloud.google.com/maps-platform</a> and sign in with your Google account.</li>
+                                        <li>Click <strong>Get Started</strong>, choose the Maps/Routes/Places products you need, and create a new project.</li>
+                                        <li>Attach a billing profile when prompted (Maps Platform requires billing even for the free credit tier).</li>
+                                    </ol>
+                                    <img class="img-fluid" src="assets/images1/googlemap.png" alt="Google Cloud Console navigation" style="max-width:720px;margin:16px 0;" />
+                                </div>
+                                <div id="gm-key" class="section-block">
+                                    <h3 class="block-title">Generate &amp; secure the API key</h3>
+                                    <ol>
+                                        <li>Open <strong>APIs &amp; Services → Credentials</strong> inside your project.</li>
+                                        <li>Click <strong>Create credentials → API key</strong>. Google will show the key instantly in a modal.</li>
+                                        <li>Choose <strong>Restrict key</strong> to limit HTTP referrers (web) or package name + SHA-1 (Android) and allow only required APIs (Maps SDK for Android, Places API, etc.).</li>
+                                        <li>Copy the key and place it inside your app (e.g., <code>android/app/src/main/AndroidManifest.xml</code> under the <code>meta-data</code> tag or your env file).</li>
+                                        <li>If the key leaks, regenerate it here and redeploy.</li>
+                                    </ol>
+                                    <img class="img-fluid" src="assets/images1/mapkey.png" alt="Google Maps API key modal" style="max-width:720px;margin:16px 0;" />
+                                </div>
+                            </section>
+
+                            <section id="backend" class="doc-section">
+                                <h2 class="section-title">Backend Setup</h2>
+                                <div id="backend-run" class="section-block">
+                                    <h3 class="block-title">1. How to run the backend</h3>
+                                    <ol>
+                                        <li><strong>Download &amp; install Node.js</strong> – Visit <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a>, grab the LTS installer (e.g., Node.js 20), run the MSI, accept the license, and finish. npm is included automatically.</li>
+                                        <li><strong>Verify tools</strong> – In Command Prompt run <code>node -v</code> (expect something like <code>v20.11.0</code>) and <code>npm -v</code> (e.g., <code>10.2.4</code>).</li>
+                                        <li><strong>Install helpful global packages</strong> – Example: <code>npm install -g nodemon</code> then check with <code>nodemon -v</code>.</li>
+                                        <li><strong>Initialize a project</strong> – If you’re starting fresh: <code>mkdir my-node-project</code>, <code>cd my-node-project</code>, <code>npm init -y</code>, then <code>npm install express</code>.</li>
+                                        <li><strong>Create a simple Express server</strong> – Build <code>server.js</code>:
+<pre class="code-block"><code>const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Node.js server running 🚀");
+});
+
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});</code></pre>
+                                            Run it with <code>node server.js</code> and open <a href="http://localhost:3000" target="_blank" rel="noopener">http://localhost:3000</a>.</li>
+                                        <li><strong>Useful commands</strong> – <code>node file.js</code> (run a script), <code>npm install package</code> (add dependency), <code>npm install -g package</code> (global install), <code>npm run dev</code> (custom dev script).</li>
+                                    </ol>
+                                </div>
+                                <div id="backend-mongo" class="section-block">
+                                    <h3 class="block-title">2. Node.js + MongoDB (Atlas + Mongoose)</h3>
+                                    <ol>
+                                        <li><strong>Install required packages</strong> – From your backend folder run:
+<pre class="code-block"><code>npm init -y
+npm install express mongoose dotenv</code></pre></li>
+                                        <li><strong>Project structure example</strong> –
+<pre class="code-block"><code>node-mongo-app/
+├── server.js
+├── .env
+└── package.json</code></pre></li>
+                                        <li><strong>Create MongoDB Atlas cluster</strong> – Go to <a href="https://www.mongodb.com/atlas" target="_blank" rel="noopener">mongodb.com/atlas</a>, create an account, provision a cluster, click <em>Connect → Connect your application</em>, and copy the URI (e.g., <code>mongodb+srv://username:password@cluster0.mongodb.net/myDatabase</code>).</li>
+                                        <li><strong>Add credentials</strong> – In <code>.env</code> place:
+<pre class="code-block"><code>MONGO_URI=mongodb+srv://username:password@cluster0.mongodb.net/myDatabase
+PORT=5000</code></pre></li>
+                                        <li><strong>Wire up server.js</strong> –
+<pre class="code-block"><code>const express = require("express");
+const mongoose = require("mongoose");
+require("dotenv").config();
+
+const app = express();
+app.use(express.json());
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected Successfully 🚀"))
+  .catch((error) => console.log("MongoDB Connection Error:", error));
+
+app.get("/", (req, res) => {
+  res.send("Node.js + MongoDB API running");
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));</code></pre></li>
+                                        <li><strong>Create a model &amp; insert data</strong> –
+<pre class="code-block"><code>const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  age: Number
+});
+
+const User = mongoose.model("User", userSchema);
+
+app.post("/user", async (req, res) => {
+  const user = new User(req.body);
+  await user.save();
+  res.json(user);
+});</code></pre></li>
+                                        <li><strong>Run the API</strong> – Execute <code>node server.js</code>. You should see “MongoDB Connected Successfully 🚀” and “Server running on port 5000”, then visit <a href="http://localhost:5000" target="_blank" rel="noopener">http://localhost:5000</a>.</li>
+                                    </ol>
+                                </div>
+                            </section>
+
+                            <section id="admin-panel" class="doc-section">
+                                    <h2 class="section-title">Admin Panel Setup</h2>
+                                    <div class="section-block" id="admin-download">
+                                        <h3 class="block-title">1. Download &amp; install Next.js dashboard</h3>
+                                        <ol>
+                                            <li><strong>Grab the admin source</strong> – Extract the purchased ZIP and open the <code>admin</code> folder. The project is a standard Next.js app (see the official docs at <a href="https://nextjs.org/docs" target="_blank" rel="noopener">nextjs.org/docs</a>).</li>
+                                            <li><strong>Install prerequisites</strong> – Make sure Node.js LTS is installed (use <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a>). Verify with <code>node -v</code> and <code>npm -v</code>.</li>
+                                            <li><strong>Install dependencies</strong> – In the admin folder run:</li>
+                                        </ol>
+<pre class="code-block"><code>cd admin
+npm install
+</code></pre>
+                                    </div>
+                                    <div class="section-block" id="admin-config">
+                                        <h3 class="block-title">2. Configure environment &amp; run</h3>
+                                        <ol>
+                                            <li><strong>Prepare environment variables</strong> – Duplicate the sample file if present (<code>cp .env.example .env.local</code> on macOS/Linux or <code>copy .env.example .env.local</code> on Windows) and fill in API base URLs, Firebase keys, analytics IDs, payment credentials, etc.</li>
+                                            <li><strong>Run locally</strong> – Start the dashboard with <code>npm run dev</code> and visit <a href="http://localhost:3000" target="_blank" rel="noopener">http://localhost:3000</a>.</li>
+                                            <li><strong>Build for production</strong> – Execute <code>npm run build</code> followed by <code>npm run start</code>, or deploy directly to a platform like Vercel following their guide.</li>
+                                        </ol>
+<pre class="code-block"><code># one-time env copy (optional)
+cp .env.example .env.local
+
+# run & deploy
+npm run dev
+npm run build
+npm run start
+</code></pre>
+                                    </div>
+                                </section>
+
+                            <section id="payment-gateway" class="doc-section">
+                                <h2 class="section-title">Payment Gateway Install</h2>
+                                <div id="payment-ssl" class="section-block">
+                                    <h3 class="block-title">1. SSLCommerz</h3>
+                                    <ul class="list">
+                                        <li>Create a merchant account at <a href="https://www.sslcommerz.com/" target="_blank" rel="noopener">sslcommerz.com</a> (choose Sandbox first).</li>
+                                        <li>After approval, collect your <em>Store ID</em> and <em>Store Password</em> from the dashboard.</li>
+                                        <li>In the admin panel → Payment Settings, paste those values, add the API domain, and select Sandbox or Live.</li>
+                                        <li>Trigger a test checkout; confirm the callback hits your backend endpoint before switching to production.</li>
+                                    </ul>
+                                    <img class="img-fluid" src="assets/images1/ssl.png" alt="SSLCommerz sandbox store credentials" style="max-width:720px;margin:16px 0;" />
+                                </div>
+                                <div id="payment-stripe" class="section-block">
+                                    <h3 class="block-title">2. Stripe</h3>
+                                    <ul class="list">
+                                        <li>Sign up or log in at <a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener">dashboard.stripe.com/register</a> and complete the verification steps.</li>
+                                        <li>Copy the <em>Publishable key</em>, <em>Secret key</em>, and create a webhook signing secret.</li>
+                                        <li>Update the admin panel Payment Settings with those keys and drop the webhook secret into your backend <code>.env</code>.</li>
+                                        <li>Use Stripe’s test cards to run payments and ensure the Node.js server receives and verifies webhook events.</li>
+                                    </ul>
+                                    <img class="img-fluid" src="assets/images1/strip.png" alt="Stripe dashboard API keys" style="max-width:720px;margin:16px 0;" />
+                                </div>
+                            </section>
+
+                            <section id="admin-settings" class="doc-section">
+                                <h2 class="section-title">Admin App Settings Reference</h2>
+                                <div class="section-block" id="admin-payment-ui">
+                                    <h3 class="block-title">Where to enter SSLCommerz &amp; Stripe keys</h3>
+                                    <p>From the Next.js dashboard go to <strong>Settings ➜ App Settings</strong>. Use the <em>Payment Gateways</em> toggle to enable either Stripe or SSLCommerz, then paste the live/sandbox keys directly into the <strong>Stripe Credentials</strong> and <strong>SSLCommerz Credentials</strong> inputs as shown below. Don’t forget to set the minimum amount and choose Live/Test mode before saving.</p>
+                                    <img class="img-fluid" src="assets/images1/adminchagepayment.png" alt="Admin settings payment credentials" style="max-width:720px;margin:16px 0;" />
+                                </div>
+                                <div class="section-block" id="admin-currency-ui">
+                                    <h3 class="block-title">How to change currency</h3>
+                                    <p>In the same <strong>Settings ➜ App Settings</strong> page, scroll to <em>Currency Settings</em>. Pick a currency from the dropdown or manually override the <strong>Currency Code</strong>, <strong>Currency Symbol</strong>, and icon name. Click <strong>Save Settings</strong> to apply it to the entire platform.</p>
+                                    <img class="img-fluid" src="assets/images1/chnagecurrency.png" alt="Admin currency settings screenshot" style="max-width:720px;margin:16px 0;" />
+                                </div>
+                            </section>
+
+                            <section id="rating" class="doc-section">
+                                <p>Once again, thank you so much for purchasing this theme. If you have any questions about EV ChargeFinder, feel free to reach out—we're always happy to help. For broader pre-sales questions or dedicated support tickets, visit the Naasmind help desk at <a target="_blank" rel="noopener" href="https://www.naasmind.com/">https://www.naasmind.com/</a>.</p>
+                                <h1>Naasmind Team</h1>
+                            </section><!--//doc-section-->
+
+                            <section id="release-notes" class="doc-section">
+                                <h2 class="section-title">Version History</h2>
+                                <div class="section-block">
+                                    <h3 class="block-title">v1.0.0 — Initial Release <small>(March 2026)</small></h3>
+                                    <ul class="list">
+                                        <li>EV ChargeFinder Android/iOS apps with slot-based EV &amp; fuel station booking.</li>
+                                        <li>Next.js powered admin console for managing stations, connectors, pumps, and capacity.</li>
+                                        <li>Dynamic queue and time-slot engine that auto calculates charging or fueling cost.</li>
+                                        <li>Integrated payments via SSLCommerz (local) and Stripe (global) with sandbox/live toggles.</li>
+                                        <li>Real-time pricing, tariff slabs, and inventory rules configurable from the dashboard.</li>
+                                        <li>User management with role-based permissions for operators, attendants, and finance teams.</li>
+                                        <li>Push notifications, SMS/email alerts, and in-app messages for booking reminders.</li>
+                                        <li>Wallet, loyalty, and referral modules to incentivize repeat customers.</li>
+                                        <li>Analytics widgets covering revenue, energy dispensed, queue health, and payment status.</li>
+                                        <li>Support for multi-currency pricing plus custom CMS pages for policies and guides.</li>
+                                        <li>Server-ready installer scripts with environment validation and Envato purchase check.</li>
+                                        <li>Responsive layout optimized for tablets in control rooms and mobile field devices.</li>
+                                    </ul>
+                                </div>
+                            </section>
+
+                        </div><!--//content-inner-->
+                    </div><!--//doc-content-->
+                    <div class="doc-sidebar col-md-3 col-12 order-0 d-none d-md-flex">
+                        <div id="doc-nav" class="doc-nav">
+	                        
+	                            <nav id="doc-menu" class="nav doc-menu flex-column sticky">
+
+	                                <a class="nav-link scrollto" href="#android">App Configuration</a>
+                                    <nav class="doc-sub-menu nav flex-column">
+                                        <a class="nav-link scrollto" href="#bstep1">1. How to open project</a>
+                                        <a class="nav-link scrollto" href="#bstep2">2. How to change package name</a>
+                                        <a class="nav-link scrollto" href="#bstep3">3. How to change app name</a>
+                                        <a class="nav-link scrollto" href="#bstep4">4. How to change app icon</a>
+                                        <a class="nav-link scrollto" href="#bstep5">5. How to insert url</a>
+                                        <a class="nav-link scrollto" href="#bstep6">6. Generate signed APK then create new key store</a>
+                                    </nav><!--//nav-->
+
+
+
+                                    <a class="nav-link scrollto" href="#ios">iOS App Configuration</a>
+                                    <nav class="doc-sub-menu nav flex-column">
+                                        <a class="nav-link scrollto" href="#ios">1. Generate .ipa File for App Store</a>
+                                        
+                                    </nav><!--//nav-->
+
+
+                                    <a class="nav-link scrollto" href="#google-maps">Google Maps API Key</a>
+                                    <nav class="doc-sub-menu nav flex-column">
+                                        <a class="nav-link scrollto" href="#gm-account">1. Create account &amp; enable billing</a>
+                                        <a class="nav-link scrollto" href="#gm-key">2. Generate &amp; secure API key</a>
+                                    </nav>
+
+                                    <a class="nav-link scrollto" href="#backend">Backend Setup</a>
+                                    <nav class="doc-sub-menu nav flex-column">
+                                        <a class="nav-link scrollto" href="#backend-run">1. Run backend</a>
+                                        <a class="nav-link scrollto" href="#backend-mongo">2. Node.js + MongoDB</a>
+                                    </nav>
+                                    <a class="nav-link scrollto" href="#admin-panel">Admin Panel Setup</a>
+                                    <nav class="doc-sub-menu nav flex-column">
+                                        <a class="nav-link scrollto" href="#admin-download">1. Download &amp; install</a>
+                                        <a class="nav-link scrollto" href="#admin-config">2. Configure &amp; run</a>
+                                    </nav>
+                                    <a class="nav-link scrollto" href="#payment-gateway">Payment Gateway Install</a>
+                                    <nav class="doc-sub-menu nav flex-column">
+                                        <a class="nav-link scrollto" href="#payment-ssl">1. SSLCommerz</a>
+                                        <a class="nav-link scrollto" href="#payment-stripe">2. Stripe</a>
+                                    </nav>
+                                    <a class="nav-link scrollto" href="#admin-settings">Admin App Settings Reference</a>
+                                    <nav class="doc-sub-menu nav flex-column">
+                                        <a class="nav-link scrollto" href="#admin-payment-ui">1. Payment credentials</a>
+                                        <a class="nav-link scrollto" href="#admin-currency-ui">2. Currency settings</a>
+                                    </nav>
+
+
+                                    
+	                            </nav><!--//doc-menu-->
+	                        
+                        </div>
+                    </div><!--//doc-sidebar-->
+                </div><!--//doc-body-->              
+            </div><!--//container-->
+        </div><!--//doc-wrapper-->
+        
+    </div><!--//page-wrapper-->
+    
+    <footer id="footer" class="footer text-center">
+        <div class="container">
+            <!--/* This template is free as long as you keep the footer attribution link. If you'd like to use the template without the attribution link, you can buy the commercial license via our website: themes.3rdwavemedia.com Thank you for your support. :) */-->
+            <h2 class="copyright">Thanks for purchasing our product. Documentation design by <a href="https://www.naasmind.com/" target="_blank">Naasmind</a>.</h2>
+            
+        </div><!--//container-->
+    </footer><!--//footer-->
+    
+     
+    <!-- Main Javascript -->          
+    <script type="text/javascript" src="assets/plugins/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/plugins/prism/prism.js"></script>    
+    <script type="text/javascript" src="assets/plugins/jquery-scrollTo/jquery.scrollTo.min.js"></script>      
+    <script type="text/javascript" src="assets/plugins/stickyfill/dist/stickyfill.min.js"></script>                                                             
+    <script type="text/javascript" src="assets/js/main.js"></script>
+    
+    
+    <script>
+    jQuery(document).ready(function(){
+  jQuery(function() {
+        jQuery(this).bind("contextmenu", function(event) {
+            event.preventDefault();
+            alert('Right click disable in this site!!')
+        });
+    });
+});
+
+$("html").on("contextmenu",function(e){
+   return false;
+});
+
+$(document).on('keydown', function(e) {
+    if((e.ctrlKey || e.metaKey) && (e.key == "p" || e.charCode == 16 || e.charCode == 112 || e.keyCode == 80) ){
+        alert("Please use the Print PDF button below for a better rendering on the document");
+        e.cancelBubble = true;
+        e.preventDefault();
+
+        e.stopImmediatePropagation();
+    }  
+});
+
+</script>
+
+<style type="text/css" media="print">
+    * { display: none; }
+</style>
+
+</body>
+</html> 
+

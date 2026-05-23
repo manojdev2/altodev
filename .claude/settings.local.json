@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest alto --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --no-git --yes)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest init --defaults)",
+      "Bash(npx shadcn@latest add input sheet badge)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(cat)",
+      "Bash(bash /tmp/check_files.sh)",
+      "Bash(bash /tmp/final_check.sh)",
+      "Bash(node -e \"const l = require\\('lucide-react'\\); const icons = ['CalendarCheck', 'BatteryFull', 'Battery', 'Calendar', 'Sparkles', 'Lock', 'CheckCircle2', 'ChevronRight', 'Crown', 'Zap', 'Tag', 'Clock', 'Shield', 'Bell', 'Search', 'SlidersHorizontal', 'Star', 'MapPin', 'Headphones']; icons.forEach\\(i => console.log\\(i + ':', !!l[i]\\)\\)\")"
+    ]
+  }
+}

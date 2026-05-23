@@ -24,7 +24,7 @@ export function BottomTabBar() {
           const active = path.startsWith(href);
           return (
             <Link key={href} href={href} className="flex flex-col items-center gap-1 px-4 py-3 min-w-0">
-              <Icon size={22} style={{ color: active ? '#6C5CE7' : '#9CA3AF' }} />
+              <Icon size={18} style={{ color: active ? '#6C5CE7' : '#9CA3AF' }} />
               <span className="text-xs" style={{ color: active ? '#6C5CE7' : '#9CA3AF', fontWeight: active ? 600 : 400 }}>
                 {label}
               </span>
@@ -33,15 +33,15 @@ export function BottomTabBar() {
         })}
 
         {/* Ask Alto center button */}
-        <Link href="/charge" className="flex flex-col items-center gap-1 px-2 -mt-6">
+        <Link href="/charge" className="flex flex-col items-center gap-1 px-2 -mt-5">
           <motion.div
             whileTap={{ scale: 0.93 }}
-            className="w-14 h-14 rounded-full flex items-center justify-center"
+            className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{
               background: 'linear-gradient(135deg, #6C5CE7, #8B7FF0)',
-              boxShadow: '0 4px 20px rgba(108,92,231,0.45)',
+              boxShadow: '0 4px 16px rgba(108,92,231,0.4)',
             }}>
-            <Sparkles size={24} className="text-white" />
+            <Sparkles size={20} className="text-white" />
           </motion.div>
           <span className="text-xs font-semibold" style={{ color: '#6C5CE7' }}>Ask Alto</span>
         </Link>
@@ -50,7 +50,7 @@ export function BottomTabBar() {
           const active = path.startsWith(href);
           return (
             <Link key={href} href={href} className="flex flex-col items-center gap-1 px-4 py-3 min-w-0">
-              <Icon size={22} style={{ color: active ? '#6C5CE7' : '#9CA3AF' }} />
+              <Icon size={18} style={{ color: active ? '#6C5CE7' : '#9CA3AF' }} />
               <span className="text-xs" style={{ color: active ? '#6C5CE7' : '#9CA3AF', fontWeight: active ? 600 : 400 }}>
                 {label}
               </span>

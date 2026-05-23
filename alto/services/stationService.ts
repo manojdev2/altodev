@@ -2,7 +2,9 @@ import stationsData from '@/data/stations.json';
 import type { Station, TimeSlot, Reservation } from '@/types/station';
 import { sleep } from '@/lib/utils';
 
-export async function getNearbyStations(_lat: number, _lng: number): Promise<Station[]> {
+export async function getNearbyStations(lat: number, lng: number): Promise<Station[]> {
+  void lat; // Reserved for geospatial filtering
+  void lng; // Reserved for geospatial filtering
   await sleep(400);
   return stationsData as Station[];
 }

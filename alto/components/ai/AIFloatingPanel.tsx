@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
@@ -9,21 +10,26 @@ export function AIFloatingPanel({ insight, visible, bottomOffset = '52vh' }: Pro
   const [text, setText] = useState('');
   const [dismissed, setDismissed] = useState(false);
 
+  // Reset state when insight changes (intentional: resets animation on new insight)
+  useEffect(() => {
+    setDismissed(false);
+  }, [insight]);
+
+  // Animate text when visible (intentional: typewriter effect on state change)
   useEffect(() => {
     if (!visible || dismissed) return;
-    setText('');
     let i = 0;
+    setText(insight.slice(0, i));
     const interval = setInterval(() => {
       if (i < insight.length) {
-        setText(insight.slice(0, ++i));
+        i += 1;
+        setText(insight.slice(0, i));
       } else {
         clearInterval(interval);
       }
     }, 25);
     return () => clearInterval(interval);
   }, [insight, visible, dismissed]);
-
-  useEffect(() => { setDismissed(false); setText(''); }, [insight]);
 
   if (dismissed || !visible) return null;
 

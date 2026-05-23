@@ -75,7 +75,7 @@ export function RouteScreen() {
           route={route}
           stations={stations}
           onStationClick={s => setSelectedStation(prev => prev?._id === s._id ? null : s)}
-          mapStyle="light"
+          mapStyle="silver"
           selectedStationId={selectedStation?._id}
         />
         {selectedStation && <BestMatchCard station={selectedStation} />}

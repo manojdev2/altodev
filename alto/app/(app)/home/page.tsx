@@ -1,1 +1,5 @@
-export default function Home() { return <div className="p-6 text-white">Home coming soon</div>; }
+import { HomeScreen } from '@/features/home/HomeScreen';
+
+export default function Home() {
+  return <HomeScreen />;
+}

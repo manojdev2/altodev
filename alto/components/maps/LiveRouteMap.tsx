@@ -16,16 +16,36 @@ function RouteLine({ waypoints }: { waypoints: LatLng[] }) {
   return null;
 }
 
+function createMarkerIcon(color: string): google.maps.Icon {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">
+    <circle cx="22" cy="22" r="20" fill="${color}" fill-opacity="0.18"/>
+    <circle cx="22" cy="22" r="13" fill="${color}" fill-opacity="0.35"/>
+    <circle cx="22" cy="22" r="8" fill="${color}"/>
+    <circle cx="22" cy="22" r="3.5" fill="white"/>
+  </svg>`;
+  return {
+    url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
+    scaledSize: new google.maps.Size(44, 44),
+    anchor: new google.maps.Point(22, 22),
+  };
+}
+
 function StationMarkers({ stations, onStationClick }: { stations: Station[]; onStationClick?: (s: Station) => void }) {
   const map = useMap();
   const refs = useRef<google.maps.Marker[]>([]);
   useEffect(() => {
     if (!map) return;
-    refs.current.forEach(m => m.setMap(null)); refs.current = [];
+    refs.current.forEach(m => m.setMap(null));
+    refs.current = [];
     stations.forEach(s => {
-      const color = s.status === 'Available' ? '#39FF14' : s.status === 'Busy' ? '#FFB800' : '#FF4444';
-      const m = new google.maps.Marker({ map, position: { lat: s.latitude, lng: s.longitude },
-        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: color, fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 } });
+      const color = s.status === 'Available' ? '#00B894' : s.status === 'Busy' ? '#F39C12' : '#E74C3C';
+      const m = new google.maps.Marker({
+        map,
+        position: { lat: s.latitude, lng: s.longitude },
+        icon: createMarkerIcon(color),
+        title: s.name,
+        zIndex: s.isAIRecommended ? 10 : 5,
+      });
       m.addListener('click', () => onStationClick?.(s));
       refs.current.push(m);
     });
@@ -74,8 +94,15 @@ function MapContents({ route, stations = [], onStationClick }: Props) {
 export function LiveRouteMap({ route, stations, onStationClick }: Props) {
   return (
     <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-      <Map style={{ width: '100%', height: '100%' }} defaultCenter={DEFAULT_CENTER} defaultZoom={DEFAULT_ZOOM}
-        styles={SILVER_MAP_STYLE as unknown as google.maps.MapTypeStyle[]} disableDefaultUI gestureHandling="greedy">
+      <Map
+        style={{ width: '100%', height: '100%' }}
+        defaultCenter={DEFAULT_CENTER}
+        defaultZoom={13}
+        styles={SILVER_MAP_STYLE as unknown as google.maps.MapTypeStyle[]}
+        disableDefaultUI
+        gestureHandling="greedy"
+        mapTypeId="roadmap"
+      >
         <MapContents route={route} stations={stations} onStationClick={onStationClick} />
       </Map>
     </APIProvider>

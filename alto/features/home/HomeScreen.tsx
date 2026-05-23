@@ -163,7 +163,7 @@ function CommunityRow() {
 /* ── Featured station card (dark) ────────────────────────────────── */
 function FeaturedStationCard({ station }: { station: Station }) {
   return (
-    <div className="card-dark p-4">
+    <div className="card-dark p-4" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
       <div className="flex items-start gap-3 mb-4">
         <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: 'rgba(0,184,148,0.2)' }}>
@@ -189,21 +189,21 @@ function FeaturedStationCard({ station }: { station: Station }) {
       </div>
       <div className="grid grid-cols-3 gap-2 mb-4">
         {[
-          { icon: <Zap size={15} style={{ color: '#6B7280' }} />, label: 'DC Fast', value: `${station.chargingSpeedKw} kW` },
-          { icon: <Tag size={15} style={{ color: '#00B894' }} />, label: station.pricePerHour, value: 'Best price now', highlight: true },
-          { icon: <Clock size={15} style={{ color: '#6B7280' }} />, label: `< ${station.waitTimeMinutes + 5} min`, value: 'Est. wait time' },
+          { icon: <Zap size={15} style={{ color: '#9CA3AF' }} />, label: 'DC Fast', value: `${station.chargingSpeedKw} kW`, highlight: false },
+          { icon: <Tag size={15} style={{ color: '#00B894' }} />, label: `₹${station.pricePerHour}/hr`, value: 'Best price now', highlight: true },
+          { icon: <Clock size={15} style={{ color: '#9CA3AF' }} />, label: `< ${station.waitTimeMinutes + 5} min`, value: 'Est. wait time', highlight: false },
         ].map(({ icon, label, value, highlight }) => (
           <div key={label} className="rounded-xl p-2.5 flex flex-col gap-1"
             style={{ background: 'rgba(255,255,255,0.06)' }}>
             {icon}
-            <p className="text-sm font-bold" style={{ color: highlight ? '#00B894' : '#FFFFFF' }}>{label}</p>
-            <p className="text-[10px]" style={{ color: '#6B7280' }}>{value}</p>
+            <p className="text-sm font-bold" style={{ color: highlight ? '#00B894' : '#FFFFFF', fontWeight: 700 }}>{label}</p>
+            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>{value}</p>
           </div>
         ))}
       </div>
       <div className="flex gap-2">
         <button className="flex-1 py-3 rounded-xl text-sm font-semibold"
-          style={{ background: 'rgba(255,255,255,0.1)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.15)' }}>
+          style={{ background: 'rgba(255,255,255,0.15)', color: '#FFFFFF', border: '1.5px solid rgba(255,255,255,0.3)' }}>
           View details
         </button>
         <motion.button whileTap={{ scale: 0.97 }}

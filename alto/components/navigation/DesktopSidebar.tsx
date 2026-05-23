@@ -2,110 +2,59 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { House, Route, BatteryCharging, Sparkles, User, Zap } from 'lucide-react';
+import { House, BarChart2, Sparkles, Clock, Wallet, Triangle } from 'lucide-react';
 
 const TABS = [
   { href: '/home', icon: House, label: 'Home' },
-  { href: '/route', icon: Route, label: 'Route' },
-  { href: '/charge', icon: BatteryCharging, label: 'Charge' },
-  { href: '/intelligence', icon: Sparkles, label: 'Intelligence' },
-  { href: '/profile', icon: User, label: 'Profile' },
+  { href: '/route', icon: BarChart2, label: 'Pulse' },
+  { href: '/charge', icon: Sparkles, label: 'Ask Alto' },
+  { href: '/intelligence', icon: Clock, label: 'Activity' },
+  { href: '/profile', icon: Wallet, label: 'Wallet' },
 ] as const;
 
 export function DesktopSidebar() {
   const path = usePathname();
   const [expanded, setExpanded] = useState(false);
-
   return (
-    <motion.nav
-      className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-50 py-6"
-      animate={{ width: expanded ? 200 : 68 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
+    <nav
+      className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-50 py-6 px-3 transition-all duration-300"
       style={{
-        background: 'rgba(12,12,12,0.95)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-        overflow: 'hidden',
+        width: expanded ? 200 : 68,
+        background: '#FFFFFF',
+        borderRight: '1px solid #E8EAF0',
+        boxShadow: '2px 0 12px rgba(15,15,26,0.04)',
       }}
-    >
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}>
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 mb-8">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{
-            background: 'linear-gradient(135deg, #00D4FF 0%, #0077AA 100%)',
-            boxShadow: '0 0 16px rgba(0,212,255,0.4)',
-          }}
-        >
-          <Zap size={18} className="text-white" />
+      <div className="flex items-center gap-3 mb-8 px-1">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #6C5CE7, #8B7FF0)' }}>
+          <Triangle size={16} className="text-white" fill="white" />
         </div>
-        <AnimatePresence>
-          {expanded && (
-            <motion.span
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.15 }}
-              className="font-bold text-white text-lg tracking-tight"
-            >
-              Alto
-            </motion.span>
-          )}
-        </AnimatePresence>
+        {expanded && <span className="font-bold text-lg" style={{ color: '#0F0F1A' }}>Alto</span>}
       </div>
-
       {/* Nav items */}
-      <div className="flex flex-col gap-1 px-2">
+      <div className="flex flex-col gap-1">
         {TABS.map(({ href, icon: Icon, label }) => {
           const active = path.startsWith(href);
           return (
-            <Link
-              key={href}
-              href={href}
-              className="relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all group"
+            <Link key={href} href={href}
+              className="flex items-center gap-3 px-2 py-3 rounded-xl transition-all"
               style={{
-                background: active ? 'rgba(0,212,255,0.12)' : 'transparent',
-                border: active ? '1px solid rgba(0,212,255,0.18)' : '1px solid transparent',
-              }}
-            >
-              <Icon
-                size={20}
-                style={{
-                  color: active ? '#00D4FF' : '#4B5563',
-                  filter: active ? 'drop-shadow(0 0 6px rgba(0,212,255,0.7))' : 'none',
-                  flexShrink: 0,
-                  transition: 'all 0.2s',
-                }}
-              />
-              <AnimatePresence>
-                {expanded && (
-                  <motion.span
-                    initial={{ opacity: 0, x: -4 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -4 }}
-                    transition={{ duration: 0.12 }}
-                    className="text-sm font-medium whitespace-nowrap"
-                    style={{ color: active ? '#00D4FF' : '#6B7280' }}
-                  >
-                    {label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              {active && (
-                <motion.div
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r-full"
-                  layoutId="sidebar-indicator"
-                  style={{ background: '#00D4FF', boxShadow: '0 0 8px #00D4FF' }}
-                />
+                background: active ? 'rgba(108,92,231,0.1)' : 'transparent',
+              }}>
+              <Icon size={20} style={{ color: active ? '#6C5CE7' : '#9CA3AF', flexShrink: 0 }} />
+              {expanded && (
+                <span className="text-sm font-medium whitespace-nowrap"
+                  style={{ color: active ? '#6C5CE7' : '#6B7280' }}>
+                  {label}
+                </span>
               )}
             </Link>
           );
         })}
       </div>
-    </motion.nav>
+    </nav>
   );
 }

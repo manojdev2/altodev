@@ -1,1 +1,2 @@
-export default function RoutePage() { return <div className="p-6 text-white">Route coming soon</div>; }
+import { RouteScreen } from '@/features/route/RouteScreen';
+export default function RoutePage() { return <RouteScreen />; }

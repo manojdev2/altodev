@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { House, BarChart2, Sparkles, Clock, Wallet, Triangle } from 'lucide-react';
+import { House, Activity, Sparkles, Clock, Wallet, Triangle } from 'lucide-react';
 
 const TABS = [
   { href: '/home', icon: House, label: 'Home' },
-  { href: '/route', icon: BarChart2, label: 'Pulse' },
+  { href: '/route', icon: Activity, label: 'Pulse' },
   { href: '/charge', icon: Sparkles, label: 'Ask Alto' },
   { href: '/intelligence', icon: Clock, label: 'Activity' },
   { href: '/profile', icon: Wallet, label: 'Wallet' },

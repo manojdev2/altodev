@@ -2,11 +2,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { House, BarChart2, Sparkles, Clock, Wallet } from 'lucide-react';
+import { House, Activity, Sparkles, Clock, Wallet } from 'lucide-react';
 
 const LEFT_TABS = [
   { href: '/home', icon: House, label: 'Home' },
-  { href: '/route', icon: BarChart2, label: 'Pulse' },
+  { href: '/route', icon: Activity, label: 'Pulse' },
 ] as const;
 
 const RIGHT_TABS = [

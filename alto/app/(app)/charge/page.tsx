@@ -1,1 +1,5 @@
-export default function Charge() { return <div className="p-6 text-white">Charge coming soon</div>; }
+import { ChargeScreen } from '@/features/charge/ChargeScreen';
+
+export default function Charge() {
+  return <ChargeScreen />;
+}

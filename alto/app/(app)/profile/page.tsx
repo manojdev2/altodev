@@ -1,1 +1,2 @@
-export default function Profile() { return <div className="p-6 text-white">Profile coming soon</div>; }
+import { ProfileScreen } from '@/features/profile/ProfileScreen';
+export default function Profile() { return <ProfileScreen />; }

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "route_001",
+    "origin": { "lat": 12.9279, "lng": 77.6271 },
+    "destination": { "lat": 12.9698, "lng": 77.7500 },
+    "waypoints": [
+      { "lat": 12.9279, "lng": 77.6271 },
+      { "lat": 12.9350, "lng": 77.6350 },
+      { "lat": 12.9450, "lng": 77.6450 },
+      { "lat": 12.9550, "lng": 77.6600 },
+      { "lat": 12.9640, "lng": 77.6750 },
+      { "lat": 12.9700, "lng": 77.6900 },
+      { "lat": 12.9720, "lng": 77.7100 },
+      { "lat": 12.9710, "lng": 77.7300 },
+      { "lat": 12.9698, "lng": 77.7500 }
+    ],
+    "stops": [
+      {
+        "stationId": "s006",
+        "stationName": "Indiranagar Fast Charge",
+        "arrivalBatteryPct": 35,
+        "chargeDurationMin": 20,
+        "chargeToPercent": 80,
+        "coordinates": { "lat": 12.9784, "lng": 77.6408 }
+      }
+    ],
+    "totalDistanceKm": 24.5,
+    "estimatedTimeMin": 42,
+    "batteryAtDestinationPct": 62,
+    "aiInsight": "Skipping Station B due to 41% predicted congestion. Charging 14 min later saves ₹180 and reduces wait by 23 min."
+  }
+]

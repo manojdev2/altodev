@@ -1,0 +1,12 @@
+[
+  { "id": "i01", "icon": "Moon", "title": "Off-Peak Savings", "body": "Charging after 11 PM this week could save ₹1,240.", "trend": "down" },
+  { "id": "i02", "icon": "CloudRain", "title": "Weather Impact", "body": "Range reduced 12% due to rain. Stop at Indiranagar recommended.", "trend": "down" },
+  { "id": "i03", "icon": "Battery", "title": "Battery Health", "body": "Degradation risk elevated. Avoid consecutive fast charges.", "trend": "down" },
+  { "id": "i04", "icon": "Zap", "title": "Eco Drive", "body": "You drive 18% more efficiently in eco mode during rain.", "trend": "up" },
+  { "id": "i05", "icon": "TrendingUp", "title": "Trip Confidence", "body": "87% confidence you reach Whitefield without an emergency stop.", "trend": "up" },
+  { "id": "i06", "icon": "Clock", "title": "Peak Hours", "body": "Station congestion peaks at 6 PM. Leave by 5:30 PM to skip queues.", "trend": "neutral" },
+  { "id": "i07", "icon": "Leaf", "title": "Carbon Savings", "body": "You saved 48 kg CO₂ equivalent this month vs petrol.", "trend": "up" },
+  { "id": "i08", "icon": "Route", "title": "Scenic Route", "body": "Low-traffic scenic route via Cubbon Park adds 4 min, reduces stress.", "trend": "neutral" },
+  { "id": "i09", "icon": "ShieldCheck", "title": "Safety Score", "body": "Your driving safety score is 94/100 this week. Great job!", "trend": "up" },
+  { "id": "i10", "icon": "Star", "title": "Smart Reserve", "body": "AI reserved Green Energy Hub at 10:00 AM to avoid ₹90 peak premium.", "trend": "up" }
+]

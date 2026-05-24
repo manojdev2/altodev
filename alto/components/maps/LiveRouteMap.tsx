@@ -5,7 +5,7 @@ import { SILVER_MAP_STYLE, LIGHT_MAP_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM } from 
 import type { Route, LatLng } from '@/types/route';
 import type { Station } from '@/types/station';
 
-/* ── Static dashed line (HomeScreen) ────────────────────────────── */
+/* ── Static dashed line ──────────────────────────────────────────── */
 function RouteLine({ waypoints }: { waypoints: LatLng[] }) {
   const map = useMap();
   const lineRef = useRef<google.maps.Polyline | null>(null);
@@ -16,8 +16,7 @@ function RouteLine({ waypoints }: { waypoints: LatLng[] }) {
       strokeOpacity: 0,
       icons: [{
         icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeWeight: 2.5, strokeColor: '#1E293B', scale: 4 },
-        offset: '0',
-        repeat: '18px',
+        offset: '0', repeat: '18px',
       }],
       map,
     });
@@ -26,7 +25,7 @@ function RouteLine({ waypoints }: { waypoints: LatLng[] }) {
   return null;
 }
 
-/* ── Animated flowing-arrow line (Pulse screen) ──────────────────── */
+/* ── Dark animated flowing-arrow line (Pulse screen) ─────────────── */
 function AnimatedRouteLine({ waypoints }: { waypoints: LatLng[] }) {
   const map = useMap();
   const lineRef = useRef<google.maps.Polyline | null>(null);
@@ -34,7 +33,6 @@ function AnimatedRouteLine({ waypoints }: { waypoints: LatLng[] }) {
 
   useEffect(() => {
     if (!map || waypoints.length < 2) return;
-
     lineRef.current = new google.maps.Polyline({
       path: waypoints,
       strokeColor: '#12122A',
@@ -43,34 +41,69 @@ function AnimatedRouteLine({ waypoints }: { waypoints: LatLng[] }) {
       icons: [{
         icon: {
           path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-          scale: 2.8,
-          strokeColor: '#FFFFFF',
-          strokeWeight: 1.5,
-          fillColor: '#FFFFFF',
-          fillOpacity: 1,
+          scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5,
+          fillColor: '#FFFFFF', fillOpacity: 1,
         },
-        offset: '0%',
-        repeat: '60px',
+        offset: '0%', repeat: '60px',
       }],
       map,
     });
-
     let count = 0;
     intervalRef.current = setInterval(() => {
       count = (count + 1) % 200;
       const icons = lineRef.current?.get('icons');
-      if (icons) {
-        icons[0].offset = (count / 2) + '%';
-        lineRef.current?.set('icons', icons);
-      }
+      if (icons) { icons[0].offset = (count / 2) + '%'; lineRef.current?.set('icons', icons); }
     }, 20);
-
     return () => {
       lineRef.current?.setMap(null);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [map, waypoints]);
+  return null;
+}
 
+/* ── Green-to-dark gradient animated line (Home screen) ──────────── */
+function GradientRouteLine({ waypoints }: { waypoints: LatLng[] }) {
+  const map = useMap();
+  const linesRef = useRef<google.maps.Polyline[]>([]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!map || waypoints.length < 2) return;
+    const colors = ['#00B894', '#00967A', '#006B56', '#2A2A4A', '#12122A'];
+    const n = waypoints.length;
+    colors.forEach((color, i) => {
+      const start = Math.floor((i / colors.length) * (n - 1));
+      const end = Math.min(Math.floor(((i + 1) / colors.length) * (n - 1)) + 1, n);
+      if (end - start < 2) return;
+      linesRef.current.push(new google.maps.Polyline({
+        path: waypoints.slice(start, end),
+        strokeColor: color, strokeWeight: 3.5, strokeOpacity: 0.9,
+        icons: [{
+          icon: {
+            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+            scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5,
+            fillColor: '#FFFFFF', fillOpacity: 1,
+          },
+          offset: '0%', repeat: '60px',
+        }],
+        map,
+      }));
+    });
+    let count = 0;
+    intervalRef.current = setInterval(() => {
+      count = (count + 1) % 200;
+      linesRef.current.forEach(line => {
+        const icons = line.get('icons');
+        if (icons) { icons[0].offset = (count / 2) + '%'; line.set('icons', icons); }
+      });
+    }, 20);
+    return () => {
+      linesRef.current.forEach(l => l.setMap(null));
+      linesRef.current = [];
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [map, waypoints]);
   return null;
 }
 
@@ -94,7 +127,7 @@ function createTearDropIcon(variant: 'home' | 'charger' | 'selected'): google.ma
   };
 }
 
-/* Blue pulsing GPS dot — SMIL <animate> works in Chrome/Firefox img elements */
+/* Blue pulsing GPS dot — SMIL <animate> works in Chrome/Firefox */
 function createLocationDotIcon(): google.maps.Icon {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
     <circle cx="40" cy="40" r="36" fill="rgba(37,99,235,0.08)">
@@ -116,7 +149,7 @@ function createLocationDotIcon(): google.maps.Icon {
   };
 }
 
-/* Green pulsing glow ring around destination */
+/* Green pulsing glow ring (Pulse + Home screens) */
 function createGlowIcon(): google.maps.Icon {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="130" height="130" viewBox="0 0 130 130">
     <circle cx="65" cy="65" r="58" fill="rgba(0,184,148,0.1)">
@@ -135,16 +168,14 @@ function createGlowIcon(): google.maps.Icon {
   };
 }
 
-/* Black circle destination marker + white callout tooltip above */
+/* Black circle destination + callout (Pulse screen) */
 function createDestinationIcon(waitMins: number, reliability: number): google.maps.Icon {
   const label1 = `${waitMins} min away`;
   const label2 = `${reliability}% reliable`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120" viewBox="0 0 160 120">
-    <defs>
-      <filter id="sh" x="-25%" y="-25%" width="150%" height="150%">
-        <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="rgba(0,0,0,0.14)"/>
-      </filter>
-    </defs>
+    <defs><filter id="sh" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="rgba(0,0,0,0.14)"/>
+    </filter></defs>
     <rect x="2" y="2" width="156" height="62" rx="15" fill="white" filter="url(#sh)"/>
     <text x="16" y="29" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="#00B894">${label1}</text>
     <text x="16" y="50" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#6B7280">${label2}</text>
@@ -161,54 +192,83 @@ function createDestinationIcon(waitMins: number, reliability: number): google.ma
   };
 }
 
-/* ── Pulse-mode markers ──────────────────────────────────────────── */
+/* Rounded-square destination + callout (Home screen) */
+function createHomeDestinationIcon(waitMins: number, reliability: number): google.maps.Icon {
+  const label1 = `${waitMins} min away`;
+  const label2 = `${reliability}% reliable`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="156" viewBox="0 0 160 156">
+    <defs><filter id="sh4" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="rgba(0,0,0,0.13)"/>
+    </filter></defs>
+    <rect x="2" y="2" width="156" height="62" rx="14" fill="white" filter="url(#sh4)"/>
+    <text x="16" y="29" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="#00B894">${label1}</text>
+    <text x="16" y="50" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#6B7280">${label2}</text>
+    <polygon points="72,64 88,64 80,76" fill="white"/>
+    <rect x="58" y="78" width="44" height="44" rx="10" fill="#12122A" filter="url(#sh4)"/>
+    <rect x="71" y="88" width="18" height="4" rx="2" fill="white"/>
+    <rect x="69" y="92" width="22" height="12" rx="3" fill="white" opacity="0.95"/>
+    <rect x="73" y="104" width="14" height="4" rx="2" fill="white"/>
+    <rect x="77.5" y="122" width="5" height="14" fill="#12122A"/>
+    <ellipse cx="80" cy="140" rx="5.5" ry="5.5" fill="#12122A"/>
+  </svg>`;
+  return {
+    url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
+    scaledSize: new google.maps.Size(160, 156),
+    anchor: new google.maps.Point(80, 145.5),
+  };
+}
+
+/* ── Pulse-mode markers (dark circle) ────────────────────────────── */
 function PulseMarkers({ currentLoc, destLatLng, bestStation }: {
-  currentLoc: LatLng;
-  destLatLng?: LatLng;
-  bestStation?: Station;
+  currentLoc: LatLng; destLatLng?: LatLng; bestStation?: Station;
 }) {
   const map = useMap();
   const refs = useRef<google.maps.Marker[]>([]);
-
   useEffect(() => {
     if (!map) return;
     refs.current.forEach(m => m.setMap(null));
     refs.current = [];
-
-    refs.current.push(new google.maps.Marker({
-      map,
-      position: currentLoc,
-      icon: createLocationDotIcon(),
-      zIndex: 15,
-    }));
-
+    refs.current.push(new google.maps.Marker({ map, position: currentLoc, icon: createLocationDotIcon(), zIndex: 15 }));
     if (destLatLng && bestStation) {
+      refs.current.push(new google.maps.Marker({ map, position: destLatLng, icon: createGlowIcon(), zIndex: 10 }));
       refs.current.push(new google.maps.Marker({
-        map,
-        position: destLatLng,
-        icon: createGlowIcon(),
-        zIndex: 10,
-      }));
-      refs.current.push(new google.maps.Marker({
-        map,
-        position: destLatLng,
+        map, position: destLatLng,
         icon: createDestinationIcon(bestStation.waitTimeMinutes, bestStation.reliability),
-        zIndex: 20,
-        title: bestStation.name,
+        zIndex: 20, title: bestStation.name,
       }));
     }
-
     return () => { refs.current.forEach(m => m.setMap(null)); };
   }, [map, currentLoc, destLatLng, bestStation]);
-
   return null;
 }
 
-/* ── Teardrop station markers (HomeScreen / ChargeScreen) ─────────── */
+/* ── Home-mode markers (rounded-square) ─────────────────────────── */
+function HomePulseMarkers({ currentLoc, destLatLng, bestStation }: {
+  currentLoc: LatLng; destLatLng?: LatLng; bestStation?: Station;
+}) {
+  const map = useMap();
+  const refs = useRef<google.maps.Marker[]>([]);
+  useEffect(() => {
+    if (!map) return;
+    refs.current.forEach(m => m.setMap(null));
+    refs.current = [];
+    refs.current.push(new google.maps.Marker({ map, position: currentLoc, icon: createLocationDotIcon(), zIndex: 15 }));
+    if (destLatLng && bestStation) {
+      refs.current.push(new google.maps.Marker({ map, position: destLatLng, icon: createGlowIcon(), zIndex: 10 }));
+      refs.current.push(new google.maps.Marker({
+        map, position: destLatLng,
+        icon: createHomeDestinationIcon(bestStation.waitTimeMinutes, bestStation.reliability),
+        zIndex: 20, title: bestStation.name,
+      }));
+    }
+    return () => { refs.current.forEach(m => m.setMap(null)); };
+  }, [map, currentLoc, destLatLng, bestStation]);
+  return null;
+}
+
+/* ── Teardrop station markers ────────────────────────────────────── */
 function StationMarkers({ stations, onStationClick, selectedId }: {
-  stations: Station[];
-  onStationClick?: (s: Station) => void;
-  selectedId?: string;
+  stations: Station[]; onStationClick?: (s: Station) => void; selectedId?: string;
 }) {
   const map = useMap();
   const refs = useRef<google.maps.Marker[]>([]);
@@ -219,21 +279,15 @@ function StationMarkers({ stations, onStationClick, selectedId }: {
     stations.forEach(s => {
       const variant = s._id === selectedId ? 'selected' : 'charger';
       const m = new google.maps.Marker({
-        map,
-        position: { lat: s.latitude, lng: s.longitude },
-        icon: createTearDropIcon(variant),
-        title: s.name,
+        map, position: { lat: s.latitude, lng: s.longitude },
+        icon: createTearDropIcon(variant), title: s.name,
         zIndex: s._id === selectedId ? 20 : 5,
       });
       m.addListener('click', () => onStationClick?.(s));
       refs.current.push(m);
     });
     refs.current.push(new google.maps.Marker({
-      map,
-      position: DEFAULT_CENTER,
-      icon: createTearDropIcon('home'),
-      title: 'Home',
-      zIndex: 15,
+      map, position: DEFAULT_CENTER, icon: createTearDropIcon('home'), title: 'Home', zIndex: 15,
     }));
     return () => { refs.current.forEach(m => m.setMap(null)); };
   }, [map, stations, onStationClick, selectedId]);
@@ -274,11 +328,13 @@ interface Props {
   onStationClick?: (s: Station) => void;
   mapStyle?: 'silver' | 'light';
   selectedStationId?: string;
-  /** Enable Pulse-screen mode: animated arrows + GPS dot + destination glow */
+  /** Pulse screen: dark animated arrows + circle destination */
   pulseMode?: boolean;
-  /** Destination lat/lng for glow + callout (pulse mode) */
+  /** Home screen: green gradient arrows + rounded-square destination */
+  homeMode?: boolean;
+  /** Destination lat/lng for glow + marker */
   destLatLng?: LatLng;
-  /** Station data for callout text (pulse mode) */
+  /** Station data for callout text */
   bestStation?: Station;
   /** Override initial map center */
   mapCenter?: LatLng;
@@ -286,9 +342,17 @@ interface Props {
   mapZoom?: number;
 }
 
-function MapContents({ route, stations = [], onStationClick, selectedStationId, pulseMode, destLatLng, bestStation }: Props) {
+function MapContents({ route, stations = [], onStationClick, selectedStationId, pulseMode, homeMode, destLatLng, bestStation }: Props) {
   const currentLoc: LatLng = route?.waypoints?.[0] ?? DEFAULT_CENTER;
 
+  if (homeMode) {
+    return (
+      <>
+        {route && <GradientRouteLine waypoints={route.waypoints} />}
+        <HomePulseMarkers currentLoc={currentLoc} destLatLng={destLatLng} bestStation={bestStation} />
+      </>
+    );
+  }
   if (pulseMode) {
     return (
       <>
@@ -297,7 +361,6 @@ function MapContents({ route, stations = [], onStationClick, selectedStationId, 
       </>
     );
   }
-
   return (
     <>
       {route && <RouteLine waypoints={route.waypoints} />}
@@ -309,7 +372,7 @@ function MapContents({ route, stations = [], onStationClick, selectedStationId, 
 
 export function LiveRouteMap({
   route, stations, onStationClick, mapStyle = 'silver', selectedStationId,
-  pulseMode, destLatLng, bestStation, mapCenter, mapZoom,
+  pulseMode, homeMode, destLatLng, bestStation, mapCenter, mapZoom,
 }: Props) {
   const style = mapStyle === 'light' ? LIGHT_MAP_STYLE : SILVER_MAP_STYLE;
   return (
@@ -323,7 +386,7 @@ export function LiveRouteMap({
         gestureHandling="greedy">
         <MapContents
           route={route} stations={stations} onStationClick={onStationClick}
-          selectedStationId={selectedStationId} pulseMode={pulseMode}
+          selectedStationId={selectedStationId} pulseMode={pulseMode} homeMode={homeMode}
           destLatLng={destLatLng} bestStation={bestStation}
         />
       </Map>

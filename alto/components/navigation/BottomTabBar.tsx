@@ -2,30 +2,38 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { House, Activity, Sparkles, Clock, Wallet } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { House, Users, Sparkles, Route, ShieldAlert } from 'lucide-react';
 
-const LEFT_TABS = [
-  { href: '/home', icon: House, label: 'Home' },
-  { href: '/route', icon: Activity, label: 'Pulse' },
-] as const;
+type NavTab = { href: string; icon: LucideIcon; label: string; accent?: string };
 
-const RIGHT_TABS = [
-  { href: '/intelligence', icon: Clock, label: 'Activity' },
-  { href: '/profile', icon: Wallet, label: 'Wallet' },
-] as const;
+const LEFT_TABS: NavTab[] = [
+  { href: '/home',      icon: House,  label: 'Home' },
+  { href: '/community', icon: Users,  label: 'Community' },
+];
+
+const RIGHT_TABS: NavTab[] = [
+  { href: '/route',   icon: Route,       label: 'Route' },
+  { href: '/rescue',  icon: ShieldAlert, label: 'Rescue', accent: '#EF4444' },
+];
 
 export function BottomTabBar() {
   const path = usePathname();
+
+  const activeColor = (href: string, accent?: string) =>
+    path.startsWith(href) ? (accent ?? '#16A34A') : '#9CA3AF';
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
       style={{ background: '#FFFFFF', borderTop: '1px solid #E8EAF0', boxShadow: '0 -4px 20px rgba(15,15,26,0.06)' }}>
       <div className="flex items-end justify-around px-2 pb-safe">
+
         {LEFT_TABS.map(({ href, icon: Icon, label }) => {
-          const active = path.startsWith(href);
+          const color = activeColor(href);
           return (
             <Link key={href} href={href} className="flex flex-col items-center gap-1 px-4 py-3 min-w-0">
-              <Icon size={18} style={{ color: active ? '#6C5CE7' : '#9CA3AF' }} />
-              <span className="text-xs" style={{ color: active ? '#6C5CE7' : '#9CA3AF', fontWeight: active ? 600 : 400 }}>
+              <Icon size={18} style={{ color }} />
+              <span className="text-xs" style={{ color, fontWeight: path.startsWith(href) ? 600 : 400 }}>
                 {label}
               </span>
             </Link>
@@ -38,25 +46,37 @@ export function BottomTabBar() {
             whileTap={{ scale: 0.93 }}
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #6C5CE7, #8B7FF0)',
-              boxShadow: '0 4px 16px rgba(108,92,231,0.4)',
+              background: 'linear-gradient(135deg, #15803D, #16A34A)',
+              boxShadow: '0 4px 16px rgba(22,163,74,0.4)',
             }}>
             <Sparkles size={20} className="text-white" />
           </motion.div>
-          <span className="text-xs font-semibold" style={{ color: '#6C5CE7' }}>Ask Alto</span>
+          <span className="text-xs font-semibold" style={{ color: '#16A34A' }}>Ask Alto</span>
         </Link>
 
-        {RIGHT_TABS.map(({ href, icon: Icon, label }) => {
-          const active = path.startsWith(href);
+        {RIGHT_TABS.map(({ href, icon: Icon, label, accent }) => {
+          const color = activeColor(href, accent);
+          const isRescue = href === '/rescue';
           return (
             <Link key={href} href={href} className="flex flex-col items-center gap-1 px-4 py-3 min-w-0">
-              <Icon size={18} style={{ color: active ? '#6C5CE7' : '#9CA3AF' }} />
-              <span className="text-xs" style={{ color: active ? '#6C5CE7' : '#9CA3AF', fontWeight: active ? 600 : 400 }}>
+              <div className="relative">
+                <Icon size={18} style={{ color }} />
+                {isRescue && (
+                  <motion.div
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
+                    style={{ background: '#EF4444' }}
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.8, repeat: Infinity }}
+                  />
+                )}
+              </div>
+              <span className="text-xs" style={{ color, fontWeight: path.startsWith(href) ? 600 : 400 }}>
                 {label}
               </span>
             </Link>
           );
         })}
+
       </div>
     </nav>
   );

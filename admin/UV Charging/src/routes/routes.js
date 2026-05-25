@@ -46,6 +46,12 @@ import {
   SubmitChargingReview,
   GetAppSettings,
 } from "../controllers/usercontroller.js";
+import {
+  CreateRescueRequest,
+  GetRescueStatus,
+  CancelRescue,
+  SeedTechnicians,
+} from "../controllers/rescueController.js";
 import { AuthVerification } from "../middlewares/authverification.js";
 
 const router = express.Router();
@@ -132,5 +138,13 @@ router.post("/ChargingSession/:id/extend",      AuthVerification, ExtendSession)
 router.get("/ChargingSession/:id/summary",      AuthVerification, GetChargingSummary);   // Screen 6: Charging Stopped summary
 router.post("/ChargingSession/:id/pay",         AuthVerification, PayChargingSession);   // Screen 7: Proceed to Pay (extension charges)
 router.post("/ChargingSession/:id/review",      AuthVerification, SubmitChargingReview); // Give Review after Proceed to Pay
+
+// Rescue / Roadside Assistance (no auth — works with guest and registered users)
+router.post("/rescue/request",    CreateRescueRequest);
+router.get("/rescue/status/:id",  GetRescueStatus);
+router.post("/rescue/cancel/:id", CancelRescue);
+
+// Seed mock technicians (dev / admin — no auth required)
+router.post("/rescue/seed-technicians", SeedTechnicians);
 
 export default router;

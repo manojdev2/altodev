@@ -2,14 +2,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { House, Activity, Sparkles, Clock, Wallet, Triangle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { House, Activity, Sparkles, Clock, Wallet, Triangle, ShieldAlert } from 'lucide-react';
 
 const TABS = [
-  { href: '/home', icon: House, label: 'Home' },
-  { href: '/route', icon: Activity, label: 'Pulse' },
-  { href: '/charge', icon: Sparkles, label: 'Ask Alto' },
-  { href: '/intelligence', icon: Clock, label: 'Activity' },
-  { href: '/profile', icon: Wallet, label: 'Wallet' },
+  { href: '/home',         icon: House,       label: 'Home' },
+  { href: '/route',        icon: Activity,    label: 'Pulse' },
+  { href: '/charge',       icon: Sparkles,    label: 'Ask Alto' },
+  { href: '/intelligence', icon: Clock,       label: 'Activity' },
+  { href: '/rescue',       icon: ShieldAlert, label: 'Rescue', accent: '#EF4444' },
+  { href: '/profile',      icon: Wallet,      label: 'Wallet' },
 ] as const;
 
 export function DesktopSidebar() {
@@ -36,18 +38,30 @@ export function DesktopSidebar() {
       </div>
       {/* Nav items */}
       <div className="flex flex-col gap-1">
-        {TABS.map(({ href, icon: Icon, label }) => {
+        {TABS.map(({ href, icon: Icon, label, ...rest }) => {
           const active = path.startsWith(href);
+          const accent = 'accent' in rest ? (rest as { accent: string }).accent : '#6C5CE7';
+          const activeColor = active ? accent : '#9CA3AF';
+          const activeBg = active ? (accent === '#EF4444' ? 'rgba(239,68,68,0.1)' : 'rgba(108,92,231,0.1)') : 'transparent';
+          const isRescue = href === '/rescue';
           return (
             <Link key={href} href={href}
               className="flex items-center gap-3 px-2 py-3 rounded-xl transition-all"
-              style={{
-                background: active ? 'rgba(108,92,231,0.1)' : 'transparent',
-              }}>
-              <Icon size={20} style={{ color: active ? '#6C5CE7' : '#9CA3AF', flexShrink: 0 }} />
+              style={{ background: activeBg }}>
+              <div className="relative flex-shrink-0">
+                <Icon size={20} style={{ color: activeColor }} />
+                {isRescue && !active && (
+                  <motion.div
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
+                    style={{ background: '#EF4444' }}
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.8, repeat: Infinity }}
+                  />
+                )}
+              </div>
               {expanded && (
                 <span className="text-sm font-medium whitespace-nowrap"
-                  style={{ color: active ? '#6C5CE7' : '#6B7280' }}>
+                  style={{ color: active ? accent : '#6B7280' }}>
                   {label}
                 </span>
               )}

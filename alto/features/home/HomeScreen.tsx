@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   Bell, Search, Layers, Crosshair, Sparkles, Shield, Tag, Clock,
-  ChevronRight,
+  ChevronRight, Star,
   CheckCircle2, Crown, CalendarCheck, BatteryFull, Headphones, Lock, Zap, X, Plug,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authSlice';
@@ -150,10 +150,10 @@ function StartTripRow() {
 
 /* ── Desktop shared sub-components ──────────────────────────────── */
 const FILTERS = [
-  { label: 'Nearby',     icon: Zap,    color: '#00B894' },
-  { label: 'Cheapest',   icon: Tag,    color: '#00B894' },
-  { label: 'Short wait', icon: Clock,  color: '#F39C12' },
-  { label: 'Reliable',   icon: Shield, color: '#0984E3' },
+  { label: 'Nearby',     sub: 'Within 2 km', icon: Zap,    color: '#00B894' },
+  { label: 'Cheapest',   sub: 'Best price',  icon: Tag,    color: '#00B894' },
+  { label: 'Short wait', sub: 'Fast queue',  icon: Clock,  color: '#F39C12' },
+  { label: 'Reliable',   sub: 'Verified',    icon: Shield, color: '#0984E3' },
 ] as const;
 
 const PLUS_FEATURES = [
@@ -161,7 +161,15 @@ const PLUS_FEATURES = [
   { icon: CalendarCheck, label: 'Smart Reservations', sub: 'Zero wait'    },
   { icon: BatteryFull,   label: 'Battery Coach',      sub: 'Longer life'  },
   { icon: Headphones,    label: 'Priority Support',   sub: '24/7'         },
+]
+const MAP_FILTER_ICONS = [
+  { Icon: Zap, label: 'Live', active: true },
+  { Icon: Tag, label: 'Price', active: false },
+  { Icon: Clock, label: 'Wait', active: false },
+  { Icon: Shield, label: 'Trust', active: false },
 ];
+
+
 
 function AIInsightCard() {
   return (
@@ -171,7 +179,7 @@ function AIInsightCard() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             <Sparkles size={13} style={{ color: '#00B894' }} />
-            <span className="text-xs font-bold tracking-wider uppercase" style={{ color: '#00B894' }}>AI Insight</span>
+            <span className="text-xs font-bold tracking-wider uppercase" style={{ color: '#6C5CE7' }}>Best time to charge</span>
           </div>
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
             style={{ background: 'rgba(0,184,148,0.08)', border: '1px solid rgba(0,184,148,0.2)' }}>
@@ -204,8 +212,8 @@ function CommunityRow() {
         <CheckCircle2 size={22} style={{ color: '#00B894' }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold" style={{ color: '#0F0F1A' }}>Community power</p>
-        <p className="text-xs truncate" style={{ color: '#6B7280' }}>Verified live 12 sec ago by 8 nearby drivers</p>
+        <p className="text-sm font-semibold" style={{ color: '#0F0F1A' }}>Drivers near you</p>
+        <p className="text-xs truncate" style={{ color: '#6B7280' }}>8 drivers confirmed this charger 12 sec ago</p>
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
         <div className="flex -space-x-2">
@@ -232,7 +240,7 @@ function AltoPlusCard() {
           <Crown size={20} style={{ color: '#FFD700' }} />
           <div>
             <p className="font-bold text-white text-base">Alto Plus</p>
-            <p className="text-xs" style={{ color: '#9CA3AF' }}>Most intelligent charging experience</p>
+            <p className="text-xs" style={{ color: '#9CA3AF' }}>Smarter charging, every time</p>
           </div>
         </div>
         <motion.button whileTap={{ scale: 0.96 }}
@@ -255,15 +263,121 @@ function AltoPlusCard() {
   );
 }
 
-/* ── Desktop left panel ──────────────────────────────────────────── */
-function DesktopLeftPanel({ user }: { user: { fullName?: string } | null }) {
+function FeaturedStationCard({ station }: { station: Station }) {
+  return (
+    <div className="card-dark p-4" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+      <div className="flex items-start gap-3 mb-4">
+        <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: 'rgba(0,184,148,0.2)' }}>
+          <Zap size={20} style={{ color: '#00B894' }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-white text-base">{station.name}</h3>
+          <div className="flex items-center gap-3 mt-1">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full availability-pulse" style={{ background: '#00B894' }} />
+              <span className="text-xs" style={{ color: '#00B894' }}>Live</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Shield size={11} style={{ color: '#9CA3AF' }} />
+              <span className="text-xs" style={{ color: '#9CA3AF' }}>{station.reliability}% trust</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Star size={11} style={{ color: '#9CA3AF' }} />
+              <span className="text-xs" style={{ color: '#9CA3AF' }}>{station.reviewCount} verified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        {[
+          { icon: <Zap size={15} style={{ color: '#9CA3AF' }} />, label: 'DC Fast', value: `${station.chargingSpeedKw} kW`, highlight: false },
+          { icon: <Tag size={15} style={{ color: '#00B894' }} />, label: `₹${station.pricePerHour}/hr`, value: 'Best price now', highlight: true },
+          { icon: <Clock size={15} style={{ color: '#9CA3AF' }} />, label: `< ${station.waitTimeMinutes + 5} min`, value: 'Est. wait time', highlight: false },
+        ].map(({ icon, label, value, highlight }) => (
+          <div key={label} className="rounded-xl p-2.5 flex flex-col gap-1"
+            style={{ background: 'rgba(255,255,255,0.06)' }}>
+            {icon}
+            <p className="text-sm font-bold" style={{ color: highlight ? '#00B894' : '#FFFFFF', fontWeight: 700 }}>{label}</p>
+            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>{value}</p>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <button className="flex-1 py-3 rounded-xl text-sm font-semibold"
+          style={{ background: 'rgba(255,255,255,0.15)', color: '#FFFFFF', border: '1.5px solid rgba(255,255,255,0.3)' }}>
+          View details
+        </button>
+        <motion.button whileTap={{ scale: 0.97 }}
+          className="flex-1 py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2"
+          style={{ background: 'linear-gradient(135deg, #6C5CE7, #8B7FF0)' }}>
+          <CalendarCheck size={15} />
+          Book now
+        </motion.button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Mobile-only: map section ────────────────────────────────────── */
+function MobileMapSection({ stations }: { stations: Station[] }) {
+  return (
+    <div className="relative w-full" style={{ height: '42vh', minHeight: 240, maxHeight: 400 }}>
+      <LiveRouteMap stations={stations} />
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
+        <div className="rounded-2xl overflow-hidden shadow-lg"
+          style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)' }}>
+          {MAP_FILTER_ICONS.map(({ Icon, label, active }, i) => (
+            <button key={label}
+              className={`flex flex-col items-center px-3 py-2.5 ${i < MAP_FILTER_ICONS.length - 1 ? 'border-b' : ''}`}
+              style={{ borderColor: '#E8EAF0', minWidth: 56 }}>
+              <Icon size={18} style={{ color: active ? '#6C5CE7' : '#9CA3AF' }} />
+              <span className="text-[10px] mt-0.5 font-medium" style={{ color: active ? '#6C5CE7' : '#9CA3AF' }}>{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Mobile-only: filter chips ───────────────────────────────────── */
+function FilterChips() {
+  const [active, setActive] = useState(0);
+  return (
+    <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+      {FILTERS.map(({ label, sub, icon: Icon, color }, i) => (
+        <motion.button key={label} whileTap={{ scale: 0.96 }}
+          onClick={() => setActive(i)}
+          className="flex items-center gap-2 px-3 py-2.5 rounded-2xl whitespace-nowrap flex-shrink-0"
+          style={{
+            background: active === i ? `${color}15` : '#FFFFFF',
+            border: `1.5px solid ${active === i ? color : '#E8EAF0'}`,
+            boxShadow: '0 1px 4px rgba(15,15,26,0.05)',
+          }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: `${color}20` }}>
+            <Icon size={14} style={{ color }} />
+          </div>
+          <div className="text-left">
+            <p className="text-xs font-semibold" style={{ color: active === i ? color : '#0F0F1A' }}>{label}</p>
+            <p className="text-[10px]" style={{ color: '#9CA3AF' }}>{sub}</p>
+          </div>
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Desktop: left panel ─────────────────────────────────────────── */
+function DesktopLeftPanel({ user }: { user: { fullName?: string; email?: string } | null }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto"
       style={{ background: '#F5F6FA', borderRight: '1px solid #E8EAF0' }}>
       <div className="flex items-start justify-between px-5 pt-8 pb-4">
         <div>
           <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#9CA3AF' }}>
-            AI Powered · Community Verified
+            Smart Charging · Verified by Drivers
           </p>
           <h1 className="text-xl font-bold mt-0.5" style={{ color: '#0F0F1A' }}>
             {greeting()}, {user?.fullName?.split(' ')[0] ?? 'Arjun'} 👋
@@ -302,7 +416,62 @@ function DesktopLeftPanel({ user }: { user: { fullName?: string } | null }) {
   );
 }
 
-/* ── Desktop right panel ─────────────────────────────────────────── */
+/* ── Desktop: station list item ──────────────────────────────────── */
+function StationListItem({ station, selected, onClick }: {
+  station: Station;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  const available = station.status === 'Available';
+  return (
+    <motion.button whileTap={{ scale: 0.98 }} onClick={onClick}
+      className="w-full text-left p-3.5 rounded-2xl transition-all"
+      style={{
+        background: selected ? 'rgba(108,92,231,0.06)' : '#FFFFFF',
+        border: `1.5px solid ${selected ? '#6C5CE7' : '#F1F5F9'}`,
+        boxShadow: '0 1px 6px rgba(15,15,26,0.05)',
+      }}>
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: available ? 'rgba(0,184,148,0.1)' : 'rgba(239,68,68,0.1)' }}>
+          <Zap size={16} style={{ color: available ? '#00B894' : '#EF4444' }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm truncate" style={{ color: '#0F0F1A' }}>{station.name}</p>
+          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full"
+                style={{ background: available ? '#00B894' : '#EF4444' }} />
+              <span className="text-[11px]" style={{ color: available ? '#00B894' : '#EF4444' }}>
+                {station.status}
+              </span>
+            </div>
+            <span className="text-[11px]" style={{ color: '#D1D5DB' }}>·</span>
+            <span className="text-[11px]" style={{ color: '#9CA3AF' }}>{station.chargingSpeedKw} kW</span>
+            <span className="text-[11px]" style={{ color: '#D1D5DB' }}>·</span>
+            <span className="text-[11px] font-medium" style={{ color: '#6C5CE7' }}>₹{station.pricePerHour}/hr</span>
+          </div>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <p className="text-xs font-bold" style={{ color: '#00B894' }}>{station.reliability}%</p>
+          <p className="text-[10px]" style={{ color: '#9CA3AF' }}>rating</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-4 mt-2 pt-2" style={{ borderTop: '1px solid #F1F5F9' }}>
+        <div className="flex items-center gap-1">
+          <Clock size={11} style={{ color: '#9CA3AF' }} />
+          <span className="text-[11px]" style={{ color: '#6B7280' }}>~{station.waitTimeMinutes} min wait</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Star size={11} style={{ color: '#9CA3AF' }} />
+          <span className="text-[11px]" style={{ color: '#6B7280' }}>{station.reviewCount} reviews</span>
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+/* ── Desktop: right panel ────────────────────────────────────────── */
 function DesktopRightPanel({ stations, selectedStation, onSelect }: {
   stations: Station[];
   selectedStation: Station | null;
@@ -397,7 +566,28 @@ export function HomeScreen() {
   return (
     <>
       {/* ── Mobile layout ── */}
-      <div className="lg:hidden flex flex-col overflow-hidden" style={{ height: '100dvh', background: '#F0F4F8' }}>
+      <div className="min-h-screen lg:hidden" style={{ background: '#F5F6FA' }}>
+        <div className="flex items-start justify-between px-5 pt-12 pb-4">
+          <div>
+            <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#9CA3AF' }}>
+              Smart Charging · Verified by Drivers
+            </p>
+            <h1 className="text-2xl font-bold mt-0.5" style={{ color: '#0F0F1A' }}>
+              {greeting()}, {user?.fullName?.split(' ')[0] ?? 'Arjun'} 👋
+            </h1>
+          </div>
+          <div className="flex items-center gap-3 mt-1">
+            <button className="w-10 h-10 rounded-full flex items-center justify-center relative"
+              style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(15,15,26,0.1)' }}>
+              <Bell size={18} style={{ color: '#0F0F1A' }} />
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full" style={{ background: '#6C5CE7' }} />
+            </button>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #6C5CE7, #8B7FF0)' }}>
+              {user?.fullName?.charAt(0) ?? 'A'}
+            </div>
+          </div>
+        </div>
 
         {/* Map area */}
         <div className="relative flex-shrink-0" style={{ height: '46vh', minHeight: 260 }}>
@@ -412,18 +602,18 @@ export function HomeScreen() {
             mapZoom={11}
           />
 
-          {/* Alto is optimizing (top-left) */}
-          <div className="absolute z-20" style={{ top: 48, left: 16 }}>
-            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl"
-              style={{ background: '#FFFFFF', boxShadow: '0 2px 16px rgba(15,15,26,0.12)' }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(0,184,148,0.1)' }}>
-                <Sparkles size={16} style={{ color: '#00B894' }} />
+          {/* Finding Best Charger badge */}
+          <div className="absolute top-5 left-4 z-10">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl"
+              style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(15,15,26,0.12)' }}>
+              <div className="w-7 h-7 rounded-xl flex items-center justify-center"
+                style={{ background: 'rgba(0,184,148,0.12)' }}>
+                <Sparkles size={14} style={{ color: '#00B894' }} />
               </div>
               <div>
-                <p className="text-xs font-bold" style={{ color: '#0F0F1A' }}>Alto is optimizing</p>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-[10px]" style={{ color: '#6B7280' }}>Finding best charger & time</p>
+                <p className="text-xs font-bold" style={{ color: '#0F0F1A' }}>Finding Best Charger</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-[10px]" style={{ color: '#6B7280' }}>Live charger availability</p>
                   <span className="w-1.5 h-1.5 rounded-full availability-pulse" style={{ background: '#00B894' }} />
                 </div>
               </div>

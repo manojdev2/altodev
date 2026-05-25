@@ -43,6 +43,7 @@ export function RouteScreen() {
           pulseMode
           destLatLng={DEST}
           bestStation={bestStation}
+          rankedStations={stations.slice(0, 3)}
           mapCenter={PULSE_CENTER}
           mapZoom={11}
         />

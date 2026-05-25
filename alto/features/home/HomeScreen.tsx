@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   Bell, Search, Layers, Crosshair, Sparkles, Shield, Tag, Clock,
-  Users, BatteryCharging, Activity, ChevronRight, Navigation,
-  CheckCircle2, Crown, CalendarCheck, BatteryFull, Headphones, Lock, Zap,
+  ChevronRight,
+  CheckCircle2, Crown, CalendarCheck, BatteryFull, Headphones, Lock, Zap, X, Plug,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authSlice';
 import { getNearbyStations } from '@/services/stationService';
@@ -32,156 +32,117 @@ function greeting() {
   return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
 }
 
-/* ── AI Confidence circular badge ────────────────────────────────── */
-function AIConfidenceBadge({ score }: { score: number }) {
-  const r = 26;
-  const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
-  return (
-    <div className="relative w-16 h-16 flex-shrink-0">
-      <svg width="64" height="64" viewBox="0 0 64 64" style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx="32" cy="32" r={r} fill="none" stroke="#E5F5F0" strokeWidth="4" />
-        <circle cx="32" cy="32" r={r} fill="none" stroke="#00B894" strokeWidth="4"
-          strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round" />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <p className="text-lg font-bold leading-none" style={{ color: '#0F0F1A' }}>{score}</p>
-        <p className="text-[7px] text-center leading-tight mt-0.5" style={{ color: '#9CA3AF' }}>AI<br />Confidence</p>
-      </div>
-    </div>
-  );
-}
-
-/* ── 5-stat row ──────────────────────────────────────────────────── */
-function StatsRow({ station }: { station: Station }) {
+/* ── Trip stats row ──────────────────────────────────────────────── */
+function TripStatsRow() {
   const stats = [
-    { Icon: Clock,          value: `${station.waitTimeMinutes}m`, label: 'away',       green: false },
-    { Icon: Shield,         value: `${station.reliability}%`,     label: 'reliable',   green: true  },
-    { Icon: Tag,            value: '₹126',                        label: 'cheaper',    green: true  },
-    { Icon: Users,          value: '18',                          label: 'verified',   green: true  },
-    { Icon: BatteryCharging,value: 'Best',                        label: 'for battery',green: false },
-  ];
+    { label: 'ARRIVE',   value: '4:18 PM' },
+    { label: 'TRIP',     value: '2h 47m'  },
+    { label: 'CHARGING', value: '₹185'    },
+  ] as const;
   return (
-    <div className="flex py-3" style={{ borderTop: '1px solid #F1F5F9', borderBottom: '1px solid #F1F5F9' }}>
-      {stats.map(({ Icon, value, label, green }, i) => (
-        <div key={label} className="flex-1 flex flex-col items-center gap-0.5"
+    <div className="flex rounded-2xl overflow-hidden"
+      style={{ background: '#F8FAFC', border: '1px solid #F1F5F9' }}>
+      {stats.map(({ label, value }, i) => (
+        <div key={label} className="flex-1 flex flex-col items-center py-3 gap-0.5"
           style={{ borderRight: i < stats.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
-          <Icon size={12} style={{ color: green ? '#00B894' : '#9CA3AF' }} />
-          <p className="text-xs font-bold leading-tight" style={{ color: green ? '#00B894' : '#0F0F1A' }}>{value}</p>
-          <p className="text-[9px] text-center leading-tight" style={{ color: '#9CA3AF' }}>{label}</p>
+          <p className="text-[9px] font-bold tracking-widest" style={{ color: '#9CA3AF' }}>{label}</p>
+          <p className="text-[14px] font-bold" style={{ color: '#0F0F1A' }}>{value}</p>
         </div>
       ))}
     </div>
   );
 }
 
-/* ── Station detail card ─────────────────────────────────────────── */
-function StationCard({ station }: { station: Station }) {
+/* ── Savings tags row ────────────────────────────────────────────── */
+function SavingsTagsRow() {
+  const tags = [
+    { text: '-22 min wait', green: true  },
+    { text: '-₹86 cost',   green: true  },
+    { text: '+2 mi detour', green: false },
+    { text: '150 kW DC',   green: false },
+  ] as const;
   return (
-    <div className="rounded-2xl p-4"
-      style={{ border: '1px solid #F1F5F9', boxShadow: '0 2px 10px rgba(15,15,26,0.06)' }}>
-      <div className="flex gap-3 mb-3">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-          style={{ background: '#12122A' }}>
-          <svg width="26" height="32" viewBox="0 0 26 32" fill="none">
-            <rect x="7" y="0" width="12" height="4.5" rx="2.25" fill="white" opacity="0.9" />
-            <rect x="4" y="4.5" width="18" height="15" rx="3" fill="white" />
-            <rect x="8" y="19.5" width="10" height="3.5" rx="1.75" fill="white" opacity="0.8" />
-            <rect x="10" y="23" width="6" height="9" rx="1.5" fill="white" opacity="0.6" />
-          </svg>
+    <div className="flex gap-2 flex-wrap">
+      {tags.map(({ text, green }) => (
+        <span key={text} className="px-2.5 py-1 rounded-full text-[11px] font-semibold"
+          style={{
+            background: green ? 'rgba(0,184,148,0.1)' : '#F1F5F9',
+            color: green ? '#00B894' : '#6B7280',
+          }}>
+          {text}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* ── Charging stop card ──────────────────────────────────────────── */
+const STOP_META = [
+  { network: 'Tata Power',  distKm: 0.8, kw: 50,  chargeTo: 65, timeMin: 18, costRs: 72,  aiPick: false },
+  { network: 'ChargePoint', distKm: 1.2, kw: 150, chargeTo: 80, timeMin: 22, costRs: 85,  aiPick: true  },
+  { network: 'BPCL EV',     distKm: 2.1, kw: 50,  chargeTo: 72, timeMin: 28, costRs: 95,  aiPick: false },
+] as const;
+
+function ChargingStopCard({ station, rank }: { station: Station; rank: 1 | 2 | 3 }) {
+  const meta = STOP_META[rank - 1];
+  return (
+    <div className="rounded-2xl overflow-hidden"
+      style={{ border: `1.5px solid ${meta.aiPick ? 'rgba(0,184,148,0.3)' : '#F1F5F9'}` }}>
+      <div className="flex items-center gap-3 p-3.5">
+        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ background: '#0F0F1A' }}>
+          <span className="text-[14px] font-black text-white">{rank}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <p className="font-bold text-[15px] truncate" style={{ color: '#0F0F1A' }}>{station.name}</p>
-            <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: '#00B894' }}>
-              <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                <path d="M1 3.5L3.2 5.8L8 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+          <div className="flex items-center gap-2">
+            <p className="font-bold text-[13px] truncate" style={{ color: '#0F0F1A' }}>
+              {station.name}
+            </p>
+            {meta.aiPick && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0"
+                style={{ background: 'rgba(0,184,148,0.12)', color: '#00B894' }}>
+                AI PICK
+              </span>
+            )}
           </div>
-          <p className="text-[12px] mb-2" style={{ color: '#6B7280' }}>
-            {Math.round(station.distanceKm * 1000)} m · Indiranagar
+          <p className="text-[11px] mt-0.5" style={{ color: '#9CA3AF' }}>
+            {meta.network} · {meta.distKm} km · {meta.kw} kW DC
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            {['DC Fast', 'CCS2', `${station.chargingSpeedKw} kW`].map(chip => (
-              <span key={chip} className="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
-                style={{ background: '#F1F5F9', color: '#374151' }}>{chip}</span>
-            ))}
-          </div>
         </div>
       </div>
-      {/* Driver verification */}
-      <div className="flex items-center gap-2 pt-3" style={{ borderTop: '1px solid #F9FAFB' }}>
-        <div className="flex -space-x-1.5">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="w-5 h-5 rounded-full border border-white"
-              style={{ background: ['#00B894', '#0984E3', '#F39C12'][i] }} />
-          ))}
-        </div>
-        <p className="text-[11px] flex-1" style={{ color: '#6B7280' }}>
-          Verified{' '}
-          <span style={{ color: '#00B894', fontWeight: 600 }}>14 sec ago</span>
-          {' '}by 18 drivers
-        </p>
-        <ChevronRight size={14} style={{ color: '#9CA3AF' }} />
+      <div className="flex" style={{ borderTop: '1px solid #F1F5F9', background: '#F8FAFC' }}>
+        {([
+          { label: 'CHARGE TO', value: `${meta.chargeTo}%` },
+          { label: 'TIME',      value: `${meta.timeMin} min` },
+          { label: 'COST',      value: `₹${meta.costRs}` },
+        ] as const).map(({ label, value }, i) => (
+          <div key={label} className="flex-1 flex flex-col items-center py-2.5"
+            style={{ borderRight: i < 2 ? '1px solid #F1F5F9' : 'none' }}>
+            <p className="text-[9px] font-bold tracking-widest" style={{ color: '#9CA3AF' }}>{label}</p>
+            <p className="text-[13px] font-bold mt-0.5"
+              style={{ color: meta.aiPick && label === 'COST' ? '#00B894' : '#0F0F1A' }}>
+              {value}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-/* ── Best time to charge row ─────────────────────────────────────── */
-function BestTimeRow() {
+/* ── Start trip CTA row ──────────────────────────────────────────── */
+function StartTripRow() {
   return (
-    <motion.div whileTap={{ scale: 0.99 }}
-      className="flex items-center gap-3 rounded-2xl p-3.5 cursor-pointer"
-      style={{ background: 'rgba(0,184,148,0.07)', border: '1px solid rgba(0,184,148,0.15)' }}>
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: 'rgba(0,184,148,0.12)' }}>
-        <Activity size={18} style={{ color: '#00B894' }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold" style={{ color: '#0F0F1A' }}>Best time to charge</p>
-        <p className="text-[11px] mt-0.5" style={{ color: '#6B7280' }}>
-          10:30 PM – 1:30 AM · Save up to{' '}
-          <span style={{ color: '#00B894', fontWeight: 600 }}>₹126</span>
-        </p>
-      </div>
-      <ChevronRight size={15} style={{ color: '#9CA3AF' }} />
-    </motion.div>
-  );
-}
-
-/* ── Dual CTA buttons ────────────────────────────────────────────── */
-function CTARow({ station }: { station: Station }) {
-  return (
-    <div className="flex gap-3">
+    <div className="flex gap-2">
       <motion.button whileTap={{ scale: 0.97 }}
-        className="flex-1 flex items-center gap-2.5 px-3.5 py-3.5 rounded-2xl"
+        className="flex-1 py-4 rounded-2xl flex items-center justify-center text-sm font-bold text-white"
         style={{ background: '#0F0F1A' }}>
-        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.1)' }}>
-          <Navigation size={15} className="text-white" style={{ transform: 'rotate(40deg)' }} />
-        </div>
-        <div className="text-left">
-          <p className="text-sm font-bold text-white leading-tight">Start navigation</p>
-          <p className="text-[10px] leading-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            {station.waitTimeMinutes} min away · Fastest route
-          </p>
-        </div>
+        Start trip →
       </motion.button>
-
-      <motion.button whileTap={{ scale: 0.97 }}
-        className="flex-1 flex items-center gap-2.5 px-3.5 py-3.5 rounded-2xl"
-        style={{ background: 'rgba(0,184,148,0.08)', border: '1.5px solid rgba(0,184,148,0.2)' }}>
-        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ background: 'rgba(0,184,148,0.15)' }}>
-          <Sparkles size={15} style={{ color: '#00B894' }} />
-        </div>
-        <div className="text-left">
-          <p className="text-sm font-bold leading-tight" style={{ color: '#0F0F1A' }}>Let Alto handle it</p>
-          <p className="text-[10px] font-semibold leading-tight" style={{ color: '#00B894' }}>Auto reserve & monitor</p>
-        </div>
+      <motion.button whileTap={{ scale: 0.95 }}
+        className="w-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+        style={{ background: '#F1F5F9' }}>
+        <Plug size={20} style={{ color: '#0F0F1A' }} />
       </motion.button>
     </div>
   );
@@ -419,6 +380,7 @@ function DesktopRightPanel({ stations, selectedStation, onSelect }: {
 export function HomeScreen() {
   const user = useAuthStore(s => s.user);
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
+  const [showRerouting, setShowRerouting] = useState(true);
 
   const { data: stations = [] } = useQuery({
     queryKey: ['stations'],
@@ -445,6 +407,7 @@ export function HomeScreen() {
             homeMode
             destLatLng={DEST}
             bestStation={featuredStation}
+            rankedStations={stations.slice(0, 3)}
             mapCenter={HOME_MAP_CENTER}
             mapZoom={11}
           />
@@ -486,25 +449,66 @@ export function HomeScreen() {
           </div>
 
           <div className="px-5 pt-2 pb-28">
-            {featuredStation ? (
+            {stations.length > 0 ? (
               <div className="space-y-3">
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 pr-3">
-                    <h2 className="text-[20px] font-bold leading-tight" style={{ color: '#0F0F1A' }}>
-                      Alto found your best charger
-                    </h2>
-                    <p className="text-[11px] mt-1" style={{ color: '#9CA3AF' }}>
-                      Based on live data, your battery & route
-                    </p>
+                {/* AI Rerouting banner */}
+                {showRerouting && (
+                  <div className="flex items-center justify-between rounded-2xl px-3.5 py-3"
+                    style={{ background: 'rgba(0,184,148,0.08)', border: '1px solid rgba(0,184,148,0.2)' }}>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ background: 'rgba(0,184,148,0.15)' }}>
+                        <Sparkles size={15} style={{ color: '#00B894' }} />
+                      </div>
+                      <div>
+                        <p className="text-[12px] font-bold" style={{ color: '#0F0F1A' }}>AI Rerouting active</p>
+                        <p className="text-[10px]" style={{ color: '#6B7280' }}>Better charger found nearby</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setShowRerouting(false)}
+                      className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+                      style={{ color: '#00B894', background: 'rgba(0,184,148,0.12)' }}>
+                      Undo
+                    </button>
                   </div>
-                  <AIConfidenceBadge score={featuredStation.reliability} />
+                )}
+
+                {/* Title */}
+                <div>
+                  <h2 className="text-[20px] font-bold leading-tight" style={{ color: '#0F0F1A' }}>
+                    Predictive Charger Switch
+                  </h2>
+                  <p className="text-[11px] mt-1 leading-snug" style={{ color: '#6B7280' }}>
+                    Queue at your charger jumped to{' '}
+                    <span style={{ color: '#EF4444', fontWeight: 600 }}>8 vehicles</span>
+                    {' '}· Found a faster option{' '}
+                    <span style={{ color: '#0F0F1A', fontWeight: 600 }}>2 min away</span>
+                  </p>
                 </div>
 
-                <StatsRow station={featuredStation} />
-                <StationCard station={featuredStation} />
-                <BestTimeRow />
-                <CTARow station={featuredStation} />
+                <TripStatsRow />
+                <SavingsTagsRow />
+
+                {/* Charging plan header */}
+                <div className="flex items-center justify-between pt-1">
+                  <p className="text-[11px] font-bold tracking-widest" style={{ color: '#9CA3AF' }}>
+                    CHARGING PLAN
+                  </p>
+                  <button className="text-[11px] font-semibold" style={{ color: '#0F0F1A' }}>
+                    Edit →
+                  </button>
+                </div>
+
+                {/* 3 charging stop cards */}
+                {(stations.slice(0, 3) as Station[]).map((station, i) => (
+                  <ChargingStopCard
+                    key={station._id}
+                    station={station}
+                    rank={(i + 1) as 1 | 2 | 3}
+                  />
+                ))}
+
+                <StartTripRow />
               </div>
             ) : (
               <div className="flex items-center justify-center h-32">
@@ -528,6 +532,7 @@ export function HomeScreen() {
             homeMode
             destLatLng={DEST}
             bestStation={featuredStation}
+            rankedStations={stations.slice(0, 3)}
             mapCenter={HOME_MAP_CENTER}
             mapZoom={11}
           />

@@ -5,105 +5,90 @@ import { SILVER_MAP_STYLE, LIGHT_MAP_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM } from 
 import type { Route, LatLng } from '@/types/route';
 import type { Station } from '@/types/station';
 
-/* ── Static dashed line ──────────────────────────────────────────── */
-function RouteLine({ waypoints }: { waypoints: LatLng[] }) {
+/* ── Road-following route line via Directions Service ────────────── */
+function RoadRouteLine({ origin, destination, mode }: {
+  origin: LatLng;
+  destination: LatLng;
+  mode: 'gradient' | 'animated' | 'dashed';
+}) {
   const map = useMap();
-  const lineRef = useRef<google.maps.Polyline | null>(null);
-  useEffect(() => {
-    if (!map || waypoints.length < 2) return;
-    lineRef.current = new google.maps.Polyline({
-      path: waypoints,
-      strokeOpacity: 0,
-      icons: [{
-        icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeWeight: 2.5, strokeColor: '#1E293B', scale: 4 },
-        offset: '0', repeat: '18px',
-      }],
-      map,
-    });
-    return () => { lineRef.current?.setMap(null); };
-  }, [map, waypoints]);
-  return null;
-}
-
-/* ── Dark animated flowing-arrow line (Pulse screen) ─────────────── */
-function AnimatedRouteLine({ waypoints }: { waypoints: LatLng[] }) {
-  const map = useMap();
-  const lineRef = useRef<google.maps.Polyline | null>(null);
+  const linesRef   = useRef<google.maps.Polyline[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!map || waypoints.length < 2) return;
-    lineRef.current = new google.maps.Polyline({
-      path: waypoints,
-      strokeColor: '#12122A',
-      strokeWeight: 3.5,
-      strokeOpacity: 0.9,
-      icons: [{
-        icon: {
-          path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-          scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5,
-          fillColor: '#FFFFFF', fillOpacity: 1,
-        },
-        offset: '0%', repeat: '60px',
-      }],
-      map,
-    });
-    let count = 0;
-    intervalRef.current = setInterval(() => {
-      count = (count + 1) % 200;
-      const icons = lineRef.current?.get('icons');
-      if (icons) { icons[0].offset = (count / 2) + '%'; lineRef.current?.set('icons', icons); }
-    }, 20);
-    return () => {
-      lineRef.current?.setMap(null);
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [map, waypoints]);
-  return null;
-}
+    if (!map) return;
+    let alive = true;
 
-/* ── Green-to-dark gradient animated line (Home screen) ──────────── */
-function GradientRouteLine({ waypoints }: { waypoints: LatLng[] }) {
-  const map = useMap();
-  const linesRef = useRef<google.maps.Polyline[]>([]);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    new google.maps.DirectionsService().route({
+      origin:      { lat: origin.lat,      lng: origin.lng      },
+      destination: { lat: destination.lat, lng: destination.lng },
+      travelMode:  google.maps.TravelMode.DRIVING,
+    }, (result, status) => {
+      if (!alive || status !== google.maps.DirectionsStatus.OK || !result) return;
 
-  useEffect(() => {
-    if (!map || waypoints.length < 2) return;
-    const colors = ['#00B894', '#00967A', '#006B56', '#2A2A4A', '#12122A'];
-    const n = waypoints.length;
-    colors.forEach((color, i) => {
-      const start = Math.floor((i / colors.length) * (n - 1));
-      const end = Math.min(Math.floor(((i + 1) / colors.length) * (n - 1)) + 1, n);
-      if (end - start < 2) return;
-      linesRef.current.push(new google.maps.Polyline({
-        path: waypoints.slice(start, end),
-        strokeColor: color, strokeWeight: 3.5, strokeOpacity: 0.9,
-        icons: [{
-          icon: {
-            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-            scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5,
-            fillColor: '#FFFFFF', fillOpacity: 1,
-          },
-          offset: '0%', repeat: '60px',
-        }],
-        map,
-      }));
+      /* Collect every road-following point from all legs/steps */
+      const path: google.maps.LatLng[] = [];
+      result.routes[0].legs.forEach(leg =>
+        leg.steps.forEach(step => path.push(...step.path))
+      );
+      if (path.length < 2) return;
+
+      if (mode === 'dashed') {
+        linesRef.current.push(new google.maps.Polyline({
+          path, map,
+          strokeOpacity: 0,
+          icons: [{
+            icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeWeight: 2.5, strokeColor: '#1E293B', scale: 4 },
+            offset: '0', repeat: '18px',
+          }],
+        }));
+
+      } else if (mode === 'animated') {
+        const line = new google.maps.Polyline({
+          path, map,
+          strokeColor: '#12122A', strokeWeight: 3.5, strokeOpacity: 0.9,
+          icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5, fillColor: '#FFFFFF', fillOpacity: 1 }, offset: '0%', repeat: '60px' }],
+        });
+        linesRef.current.push(line);
+        let count = 0;
+        intervalRef.current = setInterval(() => {
+          count = (count + 1) % 200;
+          const icons = line.get('icons');
+          if (icons) { icons[0].offset = (count / 2) + '%'; line.set('icons', icons); }
+        }, 20);
+
+      } else { /* gradient */
+        const colors = ['#00B894', '#00967A', '#006B56', '#2A2A4A', '#12122A'];
+        const n = path.length;
+        colors.forEach((color, ci) => {
+          const s = Math.floor((ci / colors.length) * (n - 1));
+          const e = Math.min(Math.floor(((ci + 1) / colors.length) * (n - 1)) + 1, n);
+          if (e - s < 2) return;
+          linesRef.current.push(new google.maps.Polyline({
+            path: path.slice(s, e), map,
+            strokeColor: color, strokeWeight: 3.5, strokeOpacity: 0.9,
+            icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5, fillColor: '#FFFFFF', fillOpacity: 1 }, offset: '0%', repeat: '60px' }],
+          }));
+        });
+        let count = 0;
+        intervalRef.current = setInterval(() => {
+          count = (count + 1) % 200;
+          linesRef.current.forEach(l => {
+            const icons = l.get('icons');
+            if (icons) { icons[0].offset = (count / 2) + '%'; l.set('icons', icons); }
+          });
+        }, 20);
+      }
     });
-    let count = 0;
-    intervalRef.current = setInterval(() => {
-      count = (count + 1) % 200;
-      linesRef.current.forEach(line => {
-        const icons = line.get('icons');
-        if (icons) { icons[0].offset = (count / 2) + '%'; line.set('icons', icons); }
-      });
-    }, 20);
+
     return () => {
+      alive = false;
       linesRef.current.forEach(l => l.setMap(null));
       linesRef.current = [];
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [map, waypoints]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, origin.lat, origin.lng, destination.lat, destination.lng, mode]);
   return null;
 }
 
@@ -438,12 +423,12 @@ interface Props {
 }
 
 function MapContents({ route, stations = [], onStationClick, selectedStationId, pulseMode, homeMode, destLatLng, bestStation, rankedStations }: Props) {
-  const currentLoc: LatLng = route?.waypoints?.[0] ?? DEFAULT_CENTER;
+  const currentLoc: LatLng = route?.origin ?? DEFAULT_CENTER;
 
   if (homeMode) {
     return (
       <>
-        {route && <GradientRouteLine waypoints={route.waypoints} />}
+        {route && <RoadRouteLine origin={route.origin} destination={route.destination} mode="gradient" />}
         <HomeRankedMarkers currentLoc={currentLoc} rankedStations={rankedStations} />
       </>
     );
@@ -451,7 +436,7 @@ function MapContents({ route, stations = [], onStationClick, selectedStationId, 
   if (pulseMode) {
     return (
       <>
-        {route && <AnimatedRouteLine waypoints={route.waypoints} />}
+        {route && <RoadRouteLine origin={route.origin} destination={route.destination} mode="animated" />}
         {rankedStations && rankedStations.length > 0
           ? <HomeRankedMarkers currentLoc={currentLoc} rankedStations={rankedStations} />
           : <PulseMarkers currentLoc={currentLoc} destLatLng={destLatLng} bestStation={bestStation} />
@@ -461,7 +446,7 @@ function MapContents({ route, stations = [], onStationClick, selectedStationId, 
   }
   return (
     <>
-      {route && <RouteLine waypoints={route.waypoints} />}
+      {route && <RoadRouteLine origin={route.origin} destination={route.destination} mode="dashed" />}
       {route && <EVMarker waypoints={route.waypoints} />}
       <StationMarkers stations={stations} onStationClick={onStationClick} selectedId={selectedStationId} />
     </>

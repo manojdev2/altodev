@@ -75,7 +75,7 @@ export const CreateRescueRequest = async (req, res) => {
     const etaMins = Math.max(3, Math.round((distKm / 30) * 60)); // 30 km/h city average, min 3 mins
 
     const rescue = await RescueRequest.create({
-      userId: req.user._id,
+      userId: req.user?._id ?? "000000000000000000000000",
       issueType,
       issueDescription,
       severity,

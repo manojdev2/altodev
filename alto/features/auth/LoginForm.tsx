@@ -6,8 +6,8 @@ import { useAuthStore } from '@/store/authSlice';
 import toast from 'react-hot-toast';
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('rider@alto.dev');
+  const [password, setPassword] = useState('Alto@1234');
   const [loading, setLoading] = useState(false);
   const { login: setAuth } = useAuthStore();
   const router = useRouter();

@@ -3,11 +3,7 @@ import type { IssueType, Severity, RescueData } from '@/types/rescue';
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api/v1';
 
 function authHeaders(): Record<string, string> {
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('token') ?? sessionStorage.getItem('token') ?? ''
-      : '';
-  return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  return { 'Content-Type': 'application/json' };
 }
 
 export async function createRescueRequest(params: {

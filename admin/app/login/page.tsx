@@ -13,9 +13,23 @@ export default function LoginPage() {
   const { theme } = useTheme();
   const dark = theme === "dark";
 
+  const DUMMY_EMAIL = "admin@uvcharging.com";
+  const DUMMY_PASSWORD = "Admin@1234";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Dev bypass: accept dummy credentials without hitting the backend
+    if (form.email === DUMMY_EMAIL && form.password === DUMMY_PASSWORD) {
+      localStorage.setItem("admin_token", "dummy-admin-token-dev");
+      localStorage.setItem("admin_user", JSON.stringify({ _id: "dev001", name: "Admin", email: DUMMY_EMAIL }));
+      toast.success("Welcome back!");
+      router.replace("/dashboard");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await api.post("/admin/login", {
         email: form.email,

@@ -69,9 +69,9 @@ function SOSPulse() {
       ))}
       <motion.div
         className="w-20 h-20 rounded-full flex items-center justify-center text-white font-black text-2xl z-10"
-        style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)', boxShadow: '0 8px 32px rgba(239,68,68,0.5)' }}
+        style={{ background: 'linear-gradient(135deg, #0f0b0b, #100d0d)', boxShadow: '0 8px 32px rgba(239,68,68,0.5)' }}
         whileTap={{ scale: 0.93 }}
-        animate={{ boxShadow: ['0 8px 32px rgba(239,68,68,0.5)', '0 8px 48px rgba(239,68,68,0.8)', '0 8px 32px rgba(239,68,68,0.5)'] }}
+        animate={{ boxShadow: ['0 8px 32px rgba(233, 218, 218, 0.5)', '0 8px 48px rgba(239,68,68,0.8)', '0 8px 32px rgba(239,68,68,0.5)'] }}
         transition={{ duration: 2, repeat: Infinity }}>
         SOS
       </motion.div>

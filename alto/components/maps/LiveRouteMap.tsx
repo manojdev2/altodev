@@ -152,7 +152,7 @@ function createLocationDotIcon(): google.maps.Icon {
 /* Green pulsing glow ring (Pulse + Home screens) */
 function createGlowIcon(): google.maps.Icon {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="130" height="130" viewBox="0 0 130 130">
-    <circle cx="65" cy="65" r="58" fill="rgba(0,184,148,0.1)">
+    <circle cx="65" cy="65" r="58" fill="rgba(9, 11, 11, 0.1)">
       <animate attributeName="r" values="24;58;24" dur="2s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
     </circle>
@@ -414,6 +414,81 @@ function EVMarker({ waypoints }: { waypoints: LatLng[] }) {
   return null;
 }
 
+/* ── Rescue mode: red animated line + technician orange dot ─────── */
+function RescueRouteLine({ waypoints }: { waypoints: LatLng[] }) {
+  const map = useMap();
+  const lineRef = useRef<google.maps.Polyline | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    if (!map || waypoints.length < 2) return;
+    lineRef.current = new google.maps.Polyline({
+      path: waypoints,
+      strokeColor: '#EF4444',
+      strokeWeight: 3.5,
+      strokeOpacity: 0.9,
+      icons: [{
+        icon: {
+          path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+          scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5,
+          fillColor: '#FFFFFF', fillOpacity: 1,
+        },
+        offset: '0%', repeat: '60px',
+      }],
+      map,
+    });
+    let count = 0;
+    intervalRef.current = setInterval(() => {
+      count = (count + 1) % 200;
+      const icons = lineRef.current?.get('icons');
+      if (icons) { icons[0].offset = (count / 2) + '%'; lineRef.current?.set('icons', icons); }
+    }, 20);
+    return () => {
+      lineRef.current?.setMap(null);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [map, waypoints]);
+  return null;
+}
+
+function createTechnicianDotIcon(): google.maps.Icon {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+    <circle cx="40" cy="40" r="36" fill="rgba(239,68,68,0.08)">
+      <animate attributeName="r" values="18;36;18" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="40" r="24" fill="rgba(239,68,68,0.14)">
+      <animate attributeName="r" values="12;24;12" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.35;0;0.35" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="40" r="14" fill="rgba(239,68,68,0.22)"/>
+    <circle cx="40" cy="40" r="10" fill="#EF4444"/>
+    <circle cx="40" cy="40" r="4.5" fill="white"/>
+  </svg>`;
+  return {
+    url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
+    scaledSize: new google.maps.Size(80, 80),
+    anchor: new google.maps.Point(40, 40),
+  };
+}
+
+function RescueMarkers({ userLocation, technicianLocation }: { userLocation?: LatLng; technicianLocation?: LatLng }) {
+  const map = useMap();
+  const refs = useRef<google.maps.Marker[]>([]);
+  useEffect(() => {
+    if (!map) return;
+    refs.current.forEach(m => m.setMap(null));
+    refs.current = [];
+    if (userLocation) {
+      refs.current.push(new google.maps.Marker({ map, position: userLocation, icon: createLocationDotIcon(), zIndex: 15, title: 'Your location' }));
+    }
+    if (technicianLocation) {
+      refs.current.push(new google.maps.Marker({ map, position: technicianLocation, icon: createTechnicianDotIcon(), zIndex: 20, title: 'Technician' }));
+    }
+    return () => { refs.current.forEach(m => m.setMap(null)); };
+  }, [map, userLocation, technicianLocation]);
+  return null;
+}
+
 /* ── Props ───────────────────────────────────────────────────────── */
 interface Props {
   route?: Route | null;
@@ -425,6 +500,12 @@ interface Props {
   pulseMode?: boolean;
   /** Home screen: green gradient arrows + rounded-square destination */
   homeMode?: boolean;
+  /** Rescue screen: red animated route + pulsing technician dot */
+  rescueMode?: boolean;
+  /** Technician's current interpolated location (rescue mode) */
+  technicianLocation?: LatLng;
+  /** User's rescue location (rescue mode) */
+  userRescueLocation?: LatLng;
   /** Destination lat/lng for glow + marker */
   destLatLng?: LatLng;
   /** Station data for callout text */
@@ -437,9 +518,17 @@ interface Props {
   rankedStations?: Station[];
 }
 
-function MapContents({ route, stations = [], onStationClick, selectedStationId, pulseMode, homeMode, destLatLng, bestStation, rankedStations }: Props) {
+function MapContents({ route, stations = [], onStationClick, selectedStationId, pulseMode, homeMode, rescueMode, technicianLocation, userRescueLocation, destLatLng, bestStation, rankedStations }: Props) {
   const currentLoc: LatLng = route?.waypoints?.[0] ?? DEFAULT_CENTER;
 
+  if (rescueMode) {
+    return (
+      <>
+        {route && route.waypoints.length >= 2 && <RescueRouteLine waypoints={route.waypoints} />}
+        <RescueMarkers userLocation={userRescueLocation} technicianLocation={technicianLocation} />
+      </>
+    );
+  }
   if (homeMode) {
     return (
       <>
@@ -470,7 +559,8 @@ function MapContents({ route, stations = [], onStationClick, selectedStationId, 
 
 export function LiveRouteMap({
   route, stations, onStationClick, mapStyle = 'silver', selectedStationId,
-  pulseMode, homeMode, destLatLng, bestStation, mapCenter, mapZoom, rankedStations,
+  pulseMode, homeMode, rescueMode, technicianLocation, userRescueLocation,
+  destLatLng, bestStation, mapCenter, mapZoom, rankedStations,
 }: Props) {
   const style = mapStyle === 'light' ? LIGHT_MAP_STYLE : SILVER_MAP_STYLE;
   return (
@@ -485,6 +575,8 @@ export function LiveRouteMap({
         <MapContents
           route={route} stations={stations} onStationClick={onStationClick}
           selectedStationId={selectedStationId} pulseMode={pulseMode} homeMode={homeMode}
+          rescueMode={rescueMode} technicianLocation={technicianLocation}
+          userRescueLocation={userRescueLocation}
           destLatLng={destLatLng} bestStation={bestStation} rankedStations={rankedStations}
         />
       </Map>

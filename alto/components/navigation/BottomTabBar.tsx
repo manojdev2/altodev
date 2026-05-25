@@ -2,23 +2,26 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { House, Users, Sparkles, Route, Wallet } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { House, Users, Sparkles, Route, ShieldAlert } from 'lucide-react';
 
-const LEFT_TABS = [
-  { href: '/home',      icon: House, label: 'Home' },
-  { href: '/community', icon: Users, label: 'Community' },
-] as const;
+type NavTab = { href: string; icon: LucideIcon; label: string; accent?: string };
 
-const RIGHT_TABS = [
-  { href: '/route',   icon: Route,  label: 'Route' },
-  { href: '/profile', icon: Wallet, label: 'Wallet' },
-] as const;
+const LEFT_TABS: NavTab[] = [
+  { href: '/home',      icon: House,  label: 'Home' },
+  { href: '/community', icon: Users,  label: 'Community' },
+];
+
+const RIGHT_TABS: NavTab[] = [
+  { href: '/route',   icon: Route,       label: 'Route' },
+  { href: '/rescue',  icon: ShieldAlert, label: 'Rescue', accent: '#EF4444' },
+];
 
 export function BottomTabBar() {
   const path = usePathname();
 
-  const activeColor = (href: string) =>
-    path.startsWith(href) ? '#16A34A' : '#9CA3AF';
+  const activeColor = (href: string, accent?: string) =>
+    path.startsWith(href) ? (accent ?? '#16A34A') : '#9CA3AF';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
@@ -51,11 +54,22 @@ export function BottomTabBar() {
           <span className="text-xs font-semibold" style={{ color: '#16A34A' }}>Ask Alto</span>
         </Link>
 
-        {RIGHT_TABS.map(({ href, icon: Icon, label }) => {
-          const color = activeColor(href);
+        {RIGHT_TABS.map(({ href, icon: Icon, label, accent }) => {
+          const color = activeColor(href, accent);
+          const isRescue = href === '/rescue';
           return (
             <Link key={href} href={href} className="flex flex-col items-center gap-1 px-4 py-3 min-w-0">
-              <Icon size={18} style={{ color }} />
+              <div className="relative">
+                <Icon size={18} style={{ color }} />
+                {isRescue && (
+                  <motion.div
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
+                    style={{ background: '#EF4444' }}
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.8, repeat: Infinity }}
+                  />
+                )}
+              </div>
               <span className="text-xs" style={{ color, fontWeight: path.startsWith(href) ? 600 : 400 }}>
                 {label}
               </span>

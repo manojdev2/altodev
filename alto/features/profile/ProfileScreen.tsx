@@ -1,16 +1,17 @@
 'use client';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Bookmark, Settings, Crown, LogOut, ChevronRight } from 'lucide-react';
+import { Bookmark, Settings, Crown, LogOut, ChevronRight, Car } from 'lucide-react';
 import { useAuthStore } from '@/store/authSlice';
 import vehiclesData from '@/data/vehicles.json';
 import type { Vehicle } from '@/types/vehicle';
 
 const ITEMS = [
-  { icon: Bookmark, label: 'Saved Stations', color: '#6C5CE7' },
-  { icon: Settings, label: 'Preferences', color: '#374151' },
-  { icon: Crown, label: 'Membership', color: '#F59E0B' },
-] as const;
+  { icon: Car,      label: 'My Vehicles',   color: '#00B894', href: '/vehicles' as string | null },
+  { icon: Bookmark, label: 'Saved Stations', color: '#6C5CE7', href: null },
+  { icon: Settings, label: 'Preferences',    color: '#374151', href: null },
+  { icon: Crown,    label: 'Membership',     color: '#F59E0B', href: null },
+];
 
 export function ProfileScreen() {
   const { user, logout } = useAuthStore();
@@ -65,10 +66,11 @@ export function ProfileScreen() {
 
       {/* Menu items */}
       <div className="space-y-2 mb-4">
-        {ITEMS.map(({ icon: Icon, label, color }) => (
+        {ITEMS.map(({ icon: Icon, label, color, href }) => (
           <motion.button
             key={label}
             whileTap={{ scale: 0.98 }}
+            onClick={() => href && router.push(href)}
             className="w-full flex items-center justify-between p-4 rounded-2xl"
             style={{ background: '#FFFFFF', boxShadow: '0 1px 6px rgba(15,15,26,0.05)' }}>
             <div className="flex items-center gap-3">

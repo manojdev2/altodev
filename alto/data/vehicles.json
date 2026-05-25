@@ -1,5 +1,41 @@
 [
-  { "id": "v01", "name": "Tata Nexon EV", "plate": "KA-01-AB-1234", "batteryCapacityKwh": 40.5, "maxRangeKm": 312, "currentBatteryPct": 72, "currentRangeKm": 225 },
-  { "id": "v02", "name": "MG ZS EV", "plate": "KA-03-CD-5678", "batteryCapacityKwh": 50.3, "maxRangeKm": 461, "currentBatteryPct": 45, "currentRangeKm": 207 },
-  { "id": "v03", "name": "Hyundai Ioniq 5", "plate": "KA-05-EF-9012", "batteryCapacityKwh": 72.6, "maxRangeKm": 631, "currentBatteryPct": 88, "currentRangeKm": 555 }
+  {
+    "id": "v01",
+    "name": "Tata Nexon EV",
+    "plate": "KA-01-AB-1234",
+    "batteryCapacityKwh": 40.5,
+    "maxRangeKm": 312,
+    "currentBatteryPct": 72,
+    "currentRangeKm": 225,
+    "connectorType": "CCS2",
+    "preferredMinChargePct": 20,
+    "preferredMaxChargePct": 80,
+    "isActive": true
+  },
+  {
+    "id": "v02",
+    "name": "MG ZS EV",
+    "plate": "KA-03-CD-5678",
+    "batteryCapacityKwh": 50.3,
+    "maxRangeKm": 461,
+    "currentBatteryPct": 45,
+    "currentRangeKm": 207,
+    "connectorType": "CCS2",
+    "preferredMinChargePct": 20,
+    "preferredMaxChargePct": 80,
+    "isActive": false
+  },
+  {
+    "id": "v03",
+    "name": "Hyundai Ioniq 5",
+    "plate": "KA-05-EF-9012",
+    "batteryCapacityKwh": 72.6,
+    "maxRangeKm": 631,
+    "currentBatteryPct": 88,
+    "currentRangeKm": 555,
+    "connectorType": "CCS2",
+    "preferredMinChargePct": 20,
+    "preferredMaxChargePct": 80,
+    "isActive": false
+  }
 ]

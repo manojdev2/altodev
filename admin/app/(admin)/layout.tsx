@@ -13,8 +13,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div
         className="min-h-screen"
         style={{
-          backgroundColor: theme === "dark" ? "#101828" : "#ffffff",
-          color: theme === "dark" ? "#ffffff" : "#1E2A3A",
+          backgroundColor: theme === "dark" ? "#FFFFF" : "#ffffff",
+          color: theme === "dark" ? "#ffffff" : "#FFFFF",
         }}
       >
         <PageLoader label="Checking session…" fullscreen />

@@ -5,81 +5,96 @@ import { SILVER_MAP_STYLE, LIGHT_MAP_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM } from 
 import type { Route, LatLng } from '@/types/route';
 import type { Station } from '@/types/station';
 
-/* ── Road-following route line via Directions Service ────────────── */
+/* Decode a standard Google/OSRM encoded polyline into LatLng points */
+function decodePolyline(encoded: string): google.maps.LatLng[] {
+  const pts: google.maps.LatLng[] = [];
+  let i = 0, lat = 0, lng = 0;
+  while (i < encoded.length) {
+    let b, shift = 0, result = 0;
+    do { b = encoded.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lat += result & 1 ? ~(result >> 1) : result >> 1;
+    shift = 0; result = 0;
+    do { b = encoded.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lng += result & 1 ? ~(result >> 1) : result >> 1;
+    pts.push(new google.maps.LatLng(lat / 1e5, lng / 1e5));
+  }
+  return pts;
+}
+
+/* ── Road-following route line via OSRM (no API key required) ────── */
 function RoadRouteLine({ origin, destination, mode }: {
   origin: LatLng;
   destination: LatLng;
   mode: 'gradient' | 'animated' | 'dashed';
 }) {
   const map = useMap();
-  const linesRef   = useRef<google.maps.Polyline[]>([]);
+  const linesRef    = useRef<google.maps.Polyline[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!map) return;
     let alive = true;
 
-    new google.maps.DirectionsService().route({
-      origin:      { lat: origin.lat,      lng: origin.lng      },
-      destination: { lat: destination.lat, lng: destination.lng },
-      travelMode:  google.maps.TravelMode.DRIVING,
-    }, (result, status) => {
-      if (!alive || status !== google.maps.DirectionsStatus.OK || !result) return;
+    (async () => {
+      try {
+        const url =
+          `https://router.project-osrm.org/route/v1/driving/` +
+          `${origin.lng},${origin.lat};${destination.lng},${destination.lat}` +
+          `?overview=full&geometries=polyline`;
+        const data = await fetch(url).then(r => r.json());
+        if (!alive || data.code !== 'Ok' || !data.routes?.length) return;
 
-      /* Collect every road-following point from all legs/steps */
-      const path: google.maps.LatLng[] = [];
-      result.routes[0].legs.forEach(leg =>
-        leg.steps.forEach(step => path.push(...step.path))
-      );
-      if (path.length < 2) return;
+        const path = decodePolyline(data.routes[0].geometry as string);
+        if (!alive || path.length < 2) return;
 
-      if (mode === 'dashed') {
-        linesRef.current.push(new google.maps.Polyline({
-          path, map,
-          strokeOpacity: 0,
-          icons: [{
-            icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeWeight: 2.5, strokeColor: '#1E293B', scale: 4 },
-            offset: '0', repeat: '18px',
-          }],
-        }));
-
-      } else if (mode === 'animated') {
-        const line = new google.maps.Polyline({
-          path, map,
-          strokeColor: '#12122A', strokeWeight: 3.5, strokeOpacity: 0.9,
-          icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5, fillColor: '#FFFFFF', fillOpacity: 1 }, offset: '0%', repeat: '60px' }],
-        });
-        linesRef.current.push(line);
-        let count = 0;
-        intervalRef.current = setInterval(() => {
-          count = (count + 1) % 200;
-          const icons = line.get('icons');
-          if (icons) { icons[0].offset = (count / 2) + '%'; line.set('icons', icons); }
-        }, 20);
-
-      } else { /* gradient */
-        const colors = ['#00B894', '#00967A', '#006B56', '#2A2A4A', '#12122A'];
-        const n = path.length;
-        colors.forEach((color, ci) => {
-          const s = Math.floor((ci / colors.length) * (n - 1));
-          const e = Math.min(Math.floor(((ci + 1) / colors.length) * (n - 1)) + 1, n);
-          if (e - s < 2) return;
+        if (mode === 'dashed') {
           linesRef.current.push(new google.maps.Polyline({
-            path: path.slice(s, e), map,
-            strokeColor: color, strokeWeight: 3.5, strokeOpacity: 0.9,
-            icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5, fillColor: '#FFFFFF', fillOpacity: 1 }, offset: '0%', repeat: '60px' }],
+            path, map,
+            strokeOpacity: 0,
+            icons: [{
+              icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeWeight: 2.5, strokeColor: '#1E293B', scale: 4 },
+              offset: '0', repeat: '18px',
+            }],
           }));
-        });
-        let count = 0;
-        intervalRef.current = setInterval(() => {
-          count = (count + 1) % 200;
-          linesRef.current.forEach(l => {
-            const icons = l.get('icons');
-            if (icons) { icons[0].offset = (count / 2) + '%'; l.set('icons', icons); }
+
+        } else if (mode === 'animated') {
+          const line = new google.maps.Polyline({
+            path, map,
+            strokeColor: '#12122A', strokeWeight: 3.5, strokeOpacity: 0.9,
+            icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5, fillColor: '#FFFFFF', fillOpacity: 1 }, offset: '0%', repeat: '60px' }],
           });
-        }, 20);
-      }
-    });
+          linesRef.current.push(line);
+          let count = 0;
+          intervalRef.current = setInterval(() => {
+            count = (count + 1) % 200;
+            const icons = line.get('icons');
+            if (icons) { icons[0].offset = (count / 2) + '%'; line.set('icons', icons); }
+          }, 20);
+
+        } else { /* gradient */
+          const colors = ['#00B894', '#00967A', '#006B56', '#2A2A4A', '#12122A'];
+          const n = path.length;
+          colors.forEach((color, ci) => {
+            const s = Math.floor((ci / colors.length) * (n - 1));
+            const e = Math.min(Math.floor(((ci + 1) / colors.length) * (n - 1)) + 1, n);
+            if (e - s < 2) return;
+            linesRef.current.push(new google.maps.Polyline({
+              path: path.slice(s, e), map,
+              strokeColor: color, strokeWeight: 3.5, strokeOpacity: 0.9,
+              icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.8, strokeColor: '#FFFFFF', strokeWeight: 1.5, fillColor: '#FFFFFF', fillOpacity: 1 }, offset: '0%', repeat: '60px' }],
+            }));
+          });
+          let count = 0;
+          intervalRef.current = setInterval(() => {
+            count = (count + 1) % 200;
+            linesRef.current.forEach(l => {
+              const icons = l.get('icons');
+              if (icons) { icons[0].offset = (count / 2) + '%'; l.set('icons', icons); }
+            });
+          }, 20);
+        }
+      } catch { /* network unavailable — no route drawn */ }
+    })();
 
     return () => {
       alive = false;

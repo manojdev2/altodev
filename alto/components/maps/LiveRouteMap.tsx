@@ -192,21 +192,72 @@ function createDestinationIcon(waitMins: number, reliability: number): google.ma
   };
 }
 
-/* Numbered ranked pin (1=red, 2=green, 3=gray) */
-function createRankedPinIcon(rank: 1 | 2 | 3): google.maps.Icon {
-  const bg = rank === 1 ? '#EF4444' : rank === 2 ? '#00B894' : '#9CA3AF';
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="52" viewBox="0 0 40 52">
-    <defs><filter id="rp${rank}" x="-30%" y="-20%" width="160%" height="150%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.22)"/>
-    </filter></defs>
-    <path d="M20 2C10 2 2 10 2 20C2 32 20 50 20 50C20 50 38 32 38 20C38 10 30 2 20 2Z" fill="${bg}" filter="url(#rp${rank})"/>
-    <circle cx="20" cy="20" r="11" fill="rgba(255,255,255,0.2)"/>
-    <text x="20" y="26" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="800" fill="white">${rank}</text>
+/* Numbered ranked pin: callout bubble + black rounded-square head + stem + glow dot */
+function createRankedPinIcon(rank: 1 | 2 | 3, station: Station): google.maps.Icon {
+  const isAI   = rank === 2;
+  const glowColor  = isAI ? '#00B894' : rank === 1 ? '#EF4444' : '#9CA3AF';
+  const textColor  = isAI ? '#00B894' : rank === 1 ? '#EF4444' : '#374151';
+  const outerGlowR = isAI ? 22 : 15;
+
+  const W = 130, CX = 65;
+
+  /* Bubble */
+  const bH = 52;
+  /* Tail triangle */
+  const tailH = 10, tailY = bH;
+  /* Pin head */
+  const pinW = 50, pinH = 50, pinRx = 13;
+  const pinX = CX - pinW / 2, pinY = tailY + tailH;
+  /* Stem */
+  const stemY1 = pinY + pinH, stemY2 = stemY1 + 16;
+  /* Glow */
+  const glowCY = stemY2 + 12;
+  const totalH  = glowCY + outerGlowR + 4;
+
+  const line1 = `${station.waitTimeMinutes ?? 2} min away`;
+  const line2  = `${station.reliability ?? 95}% reliable`;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}">
+    <defs>
+      <filter id="bs${rank}" x="-15%" y="-15%" width="130%" height="130%">
+        <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="rgba(0,0,0,0.13)"/>
+      </filter>
+      <radialGradient id="gl${rank}" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="${glowColor}" stop-opacity="0.55"/>
+        <stop offset="60%"  stop-color="${glowColor}" stop-opacity="0.12"/>
+        <stop offset="100%" stop-color="${glowColor}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <!-- Bubble -->
+    <rect x="5" y="0" width="${W - 10}" height="${bH}" rx="12" fill="white" filter="url(#bs${rank})"/>
+    <polygon points="${CX - 8},${tailY} ${CX},${tailY + tailH} ${CX + 8},${tailY}" fill="white"/>
+    <!-- Bubble text -->
+    <text x="${CX}" y="20" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif" font-size="13" font-weight="700"
+      fill="${textColor}">${line1}</text>
+    <text x="${CX}" y="39" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif" font-size="11"
+      fill="#6B7280">${line2}</text>
+    <!-- Glow rings -->
+    <circle cx="${CX}" cy="${glowCY}" r="${outerGlowR}" fill="url(#gl${rank})"/>
+    <circle cx="${CX}" cy="${glowCY}" r="${outerGlowR * 0.52}" fill="${glowColor}" opacity="0.22"/>
+    <circle cx="${CX}" cy="${glowCY}" r="${outerGlowR * 0.28}" fill="${glowColor}" opacity="0.65"/>
+    <circle cx="${CX}" cy="${glowCY}" r="${outerGlowR * 0.13}" fill="${glowColor}"/>
+    <!-- Stem -->
+    <line x1="${CX}" y1="${stemY1}" x2="${CX}" y2="${stemY2}"
+      stroke="#374151" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Pin head -->
+    <rect x="${pinX}" y="${pinY}" width="${pinW}" height="${pinH}" rx="${pinRx}" fill="#0F0F1A"/>
+    <!-- Rank number -->
+    <text x="${CX}" y="${pinY + pinH * 0.68}" text-anchor="middle"
+      font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="900"
+      fill="white">${rank}</text>
   </svg>`;
+
   return {
     url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
-    scaledSize: new google.maps.Size(40, 52),
-    anchor: new google.maps.Point(20, 50),
+    scaledSize: new google.maps.Size(W, totalH),
+    anchor: new google.maps.Point(CX, glowCY),
   };
 }
 
@@ -260,12 +311,9 @@ function HomeRankedMarkers({ currentLoc, rankedStations }: {
       rankedStations.slice(0, 3).forEach((station, i) => {
         const rank = (i + 1) as 1 | 2 | 3;
         const pos = { lat: station.latitude, lng: station.longitude };
-        if (rank === 2) {
-          refs.current.push(new google.maps.Marker({ map, position: pos, icon: createGlowIcon(), zIndex: 10 }));
-        }
         const marker = new google.maps.Marker({
           map, position: pos,
-          icon: createRankedPinIcon(rank),
+          icon: createRankedPinIcon(rank, station),
           zIndex: rank === 2 ? 25 : 20,
           title: station.name,
         });

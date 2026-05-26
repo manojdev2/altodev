@@ -2,15 +2,18 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Bell, Search, Layers, Crosshair, Sparkles, Shield, Tag, Clock,
+  Bell, Layers, Crosshair, Sparkles, Shield, Tag, Clock,
   ChevronRight, Star,
   CheckCircle2, Crown, CalendarCheck, BatteryFull, Headphones, Lock, Zap, X, Plug,
+  LocateFixed, MapPin,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authSlice';
 import { getNearbyStations } from '@/services/stationService';
 import { getOptimizedRoute } from '@/services/routeService';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { LocationSearchBar, type LocationResult } from '@/components/maps/LocationSearchBar';
 import type { Station } from '@/types/station';
 
 const LiveRouteMap = dynamic(
@@ -22,10 +25,6 @@ const MiniSparkline = dynamic(
   () => import('./MiniSparkline').then(m => ({ default: m.MiniSparkline })),
   { ssr: false }
 );
-
-const ORIGIN = { lat: 12.9279, lng: 77.6271 };
-const DEST   = { lat: 12.9698, lng: 77.7500 };
-const HOME_MAP_CENTER = { lat: 12.948, lng: 77.700 };
 
 function greeting() {
   const h = new Date().getHours();
@@ -370,7 +369,11 @@ function FilterChips() {
 }
 
 /* ── Desktop: left panel ─────────────────────────────────────────── */
-function DesktopLeftPanel({ user }: { user: { fullName?: string; email?: string } | null }) {
+function DesktopLeftPanel({ user, onSearchLocation, onUseCurrentLocation }: {
+  user: { fullName?: string; email?: string } | null;
+  onSearchLocation: (loc: LocationResult) => void;
+  onUseCurrentLocation: () => void;
+}) {
   return (
     <div className="flex flex-col h-full overflow-y-auto"
       style={{ background: '#F5F6FA', borderRight: '1px solid #E8EAF0' }}>
@@ -396,6 +399,12 @@ function DesktopLeftPanel({ user }: { user: { fullName?: string; email?: string 
         </div>
       </div>
       <div className="px-4 space-y-3 pb-6">
+        {/* Desktop location search */}
+        <LocationSearchBar
+          placeholder="Search area or city…"
+          onLocation={onSearchLocation}
+          onUseCurrentLocation={onUseCurrentLocation}
+        />
         <div className="grid grid-cols-3 gap-2">
           {[
             { label: 'Sessions', value: '142' },
@@ -472,101 +481,157 @@ function StationListItem({ station, selected, onClick }: {
 }
 
 /* ── Desktop: right panel ────────────────────────────────────────── */
-function DesktopRightPanel({ stations, selectedStation, onSelect }: {
+function DesktopRightPanel({ stations, stationsLoading, showRerouting, onUndoRerouting }: {
   stations: Station[];
-  selectedStation: Station | null;
-  onSelect: (s: Station) => void;
+  stationsLoading: boolean;
+  showRerouting: boolean;
+  onUndoRerouting: () => void;
 }) {
-  const [filterActive, setFilterActive] = useState(0);
   return (
     <div className="flex flex-col h-full overflow-hidden"
       style={{ background: '#FAFAFA', borderLeft: '1px solid #E8EAF0' }}>
-      <div className="p-4 pt-6 flex-shrink-0" style={{ borderBottom: '1px solid #F1F5F9' }}>
-        <div className="card flex items-center gap-3 px-4 py-3 mb-3">
-          <Search size={15} style={{ color: '#9CA3AF' }} />
-          <span className="flex-1 text-sm" style={{ color: '#9CA3AF' }}>Search charger or place</span>
-        </div>
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-          {FILTERS.map(({ label, icon: Icon, color }, i) => (
-            <motion.button key={label} whileTap={{ scale: 0.96 }}
-              onClick={() => setFilterActive(i)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full whitespace-nowrap flex-shrink-0 text-xs font-semibold"
-              style={{
-                background: filterActive === i ? `${color}15` : '#FFFFFF',
-                border: `1.5px solid ${filterActive === i ? color : '#E8EAF0'}`,
-                color: filterActive === i ? color : '#6B7280',
-              }}>
-              <Icon size={11} style={{ color: filterActive === i ? color : '#9CA3AF' }} />
-              {label}
-            </motion.button>
-          ))}
-        </div>
-      </div>
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
-        <p className="text-[11px] font-semibold px-1 pb-1" style={{ color: '#9CA3AF' }}>
-          {stations.length} stations nearby
+
+      {/* Header */}
+      <div className="px-4 pt-6 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid #F1F5F9' }}>
+        <p className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ color: '#9CA3AF' }}>
+          Smart Charging · AI Optimized
         </p>
-        {stations.map(station => {
-          const available = station.status === 'Available';
-          const sel = selectedStation?._id === station._id;
-          return (
-            <motion.button key={station._id} whileTap={{ scale: 0.98 }}
-              onClick={() => onSelect(station)}
-              className="w-full text-left p-3.5 rounded-2xl"
-              style={{
-                background: sel ? 'rgba(0,184,148,0.06)' : '#FFFFFF',
-                border: `1.5px solid ${sel ? '#00B894' : '#F1F5F9'}`,
-                boxShadow: '0 1px 6px rgba(15,15,26,0.05)',
-              }}>
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: available ? 'rgba(0,184,148,0.1)' : 'rgba(239,68,68,0.1)' }}>
-                  <Zap size={16} style={{ color: available ? '#00B894' : '#EF4444' }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate" style={{ color: '#0F0F1A' }}>{station.name}</p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: available ? '#00B894' : '#EF4444' }} />
-                    <span className="text-[11px]" style={{ color: available ? '#00B894' : '#EF4444' }}>{station.status}</span>
-                    <span className="text-[11px]" style={{ color: '#D1D5DB' }}>·</span>
-                    <span className="text-[11px] font-medium" style={{ color: '#00B894' }}>₹{station.pricePerHour}/hr</span>
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs font-bold" style={{ color: '#00B894' }}>{station.reliability}%</p>
-                  <p className="text-[10px]" style={{ color: '#9CA3AF' }}>trust</p>
-                </div>
+        <h2 className="text-lg font-bold" style={{ color: '#0F0F1A' }}>Predictive Charger Switch</h2>
+        <p className="text-[11px] mt-1 leading-snug" style={{ color: '#6B7280' }}>
+          Queue jumped to{' '}
+          <span style={{ color: '#EF4444', fontWeight: 600 }}>8 vehicles</span>
+          {' '}· Faster option{' '}
+          <span style={{ color: '#0F0F1A', fontWeight: 600 }}>2 min away</span>
+        </p>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        {showRerouting && (
+          <div className="flex items-center justify-between rounded-2xl px-3.5 py-3"
+            style={{ background: 'rgba(0,184,148,0.08)', border: '1px solid rgba(0,184,148,0.2)' }}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(0,184,148,0.15)' }}>
+                <Sparkles size={15} style={{ color: '#00B894' }} />
               </div>
-            </motion.button>
-          );
-        })}
+              <div>
+                <p className="text-[12px] font-bold" style={{ color: '#0F0F1A' }}>AI Rerouting active</p>
+                <p className="text-[10px]" style={{ color: '#6B7280' }}>Better charger found nearby</p>
+              </div>
+            </div>
+            <button onClick={onUndoRerouting}
+              className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+              style={{ color: '#00B894', background: 'rgba(0,184,148,0.12)' }}>
+              Undo
+            </button>
+          </div>
+        )}
+
+        <TripStatsRow />
+        <SavingsTagsRow />
+
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-[11px] font-bold tracking-widest" style={{ color: '#9CA3AF' }}>CHARGING PLAN</p>
+          <button className="text-[11px] font-semibold" style={{ color: '#0F0F1A' }}>Edit →</button>
+        </div>
+
+        {(stations.slice(0, 3) as Station[]).map((station, i) => (
+          <ChargingStopCard key={station._id} station={station} rank={(i + 1) as 1 | 2 | 3} />
+        ))}
+
+        {stations.length === 0 && !stationsLoading && (
+          <div className="flex flex-col items-center justify-center py-10 gap-2">
+            <Zap size={28} style={{ color: '#D1D5DB' }} />
+            <p className="text-sm font-bold" style={{ color: '#0F0F1A' }}>Nothing near you</p>
+            <p className="text-[11px] text-center" style={{ color: '#9CA3AF' }}>
+              No EV chargers found in this area
+            </p>
+          </div>
+        )}
+        {stations.length === 0 && stationsLoading && (
+          <div className="flex items-center justify-center py-8 gap-2">
+            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.4, ease: 'linear' }}>
+              <Crosshair size={18} style={{ color: '#6C5CE7' }} />
+            </motion.div>
+            <p className="text-sm" style={{ color: '#9CA3AF' }}>Finding chargers…</p>
+          </div>
+        )}
+
+        <StartTripRow />
       </div>
     </div>
+  );
+}
+
+/* ── Location status banner ──────────────────────────────────────── */
+function LocationBanner({ loading, error, retry }: { loading: boolean; error: string | null; retry: () => void }) {
+  if (!loading && !error) return null;
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl mx-5 mb-2"
+        style={{
+          background: error ? 'rgba(239,68,68,0.08)' : 'rgba(108,92,231,0.08)',
+          border: `1px solid ${error ? 'rgba(239,68,68,0.2)' : 'rgba(108,92,231,0.2)'}`,
+        }}>
+        {loading ? (
+          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}>
+            <LocateFixed size={13} style={{ color: '#6C5CE7' }} />
+          </motion.div>
+        ) : (
+          <MapPin size={13} style={{ color: '#EF4444' }} />
+        )}
+        <span className="text-[11px] flex-1" style={{ color: loading ? '#6C5CE7' : '#EF4444' }}>
+          {loading ? 'Getting your location…' : error}
+        </span>
+        {error && (
+          <button onClick={retry} className="text-[11px] font-semibold" style={{ color: '#6C5CE7' }}>
+            Retry
+          </button>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
 /* ── Main HomeScreen ─────────────────────────────────────────────── */
 export function HomeScreen() {
   const user = useAuthStore(s => s.user);
-  const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const [showRerouting, setShowRerouting] = useState(true);
+  const [searchLoc, setSearchLoc] = useState<LocationResult | null>(null);
+  const { lat: geoLat, lng: geoLng, loading: locLoading, error: locError, retry: retryLoc } = useGeolocation();
 
-  const { data: stations = [] } = useQuery({
-    queryKey: ['stations'],
-    queryFn: () => getNearbyStations(12.97, 77.59),
+  const lat = searchLoc?.lat ?? geoLat;
+  const lng = searchLoc?.lng ?? geoLng;
+  const origin = { lat, lng };
+
+  const locationReady = !locLoading || searchLoc !== null;
+
+  const { data: stations = [], isLoading: stationsLoading } = useQuery({
+    queryKey: ['stations', lat, lng],
+    queryFn: () => getNearbyStations(lat, lng),
+    enabled: locationReady,
   });
+
+  const topStation = stations[0] ?? null;
+  const dest = topStation ? { lat: topStation.latitude, lng: topStation.longitude } : null;
+
   const { data: route } = useQuery({
-    queryKey: ['homeRoute'],
-    queryFn: () => getOptimizedRoute(ORIGIN, DEST, 72),
+    queryKey: ['homeRoute', lat, lng, dest?.lat, dest?.lng],
+    queryFn: () => getOptimizedRoute(origin, dest!, 72),
+    enabled: locationReady && dest !== null,
   });
 
   const featuredStation = stations.find(s => s.isAIRecommended) ?? stations[0];
-  const toggleStation = (s: Station) => setSelectedStation(prev => prev?._id === s._id ? null : s);
+  const mapCenter = { lat, lng };
 
   return (
     <>
       {/* ── Mobile layout ── */}
       <div className="min-h-screen lg:hidden" style={{ background: '#F5F6FA' }}>
+        <LocationBanner loading={locLoading} error={locError} retry={retryLoc} />
         <div className="flex items-start justify-between px-5 pt-12 pb-4">
           <div>
             <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#9CA3AF' }}>
@@ -589,17 +654,33 @@ export function HomeScreen() {
           </div>
         </div>
 
+        {/* Mobile location search */}
+        <div className="px-5 pb-3">
+          <LocationSearchBar
+            placeholder="Search area or city…"
+            onLocation={loc => setSearchLoc(loc)}
+            onUseCurrentLocation={() => { setSearchLoc(null); retryLoc(); }}
+          />
+          {searchLoc && (
+            <div className="flex items-center gap-1 mt-1 px-1">
+              <MapPin size={11} style={{ color: '#6C5CE7' }} />
+              <span className="text-[11px] truncate" style={{ color: '#9CA3AF' }}>{searchLoc.label}</span>
+            </div>
+          )}
+        </div>
+
         {/* Map area */}
         <div className="relative flex-shrink-0" style={{ height: '46vh', minHeight: 260 }}>
           <LiveRouteMap
             route={route}
             mapStyle="silver"
             homeMode
-            destLatLng={DEST}
+            destLatLng={dest ?? undefined}
             bestStation={featuredStation}
             rankedStations={stations.slice(0, 3)}
-            mapCenter={HOME_MAP_CENTER}
-            mapZoom={11}
+            mapCenter={mapCenter}
+            mapZoom={13}
+            userLocation={mapCenter}
           />
 
           {/* Finding Best Charger badge */}
@@ -611,7 +692,9 @@ export function HomeScreen() {
                 <Sparkles size={14} style={{ color: '#00B894' }} />
               </div>
               <div>
-                <p className="text-xs font-bold" style={{ color: '#0F0F1A' }}>Finding Best Charger</p>
+                <p className="text-xs font-bold" style={{ color: '#0F0F1A' }}>
+                  {locLoading ? 'Getting location…' : 'Finding Best Charger'}
+                </p>
                 <div className="flex items-center gap-1">
                   <p className="text-[10px]" style={{ color: '#6B7280' }}>Live charger availability</p>
                   <span className="w-1.5 h-1.5 rounded-full availability-pulse" style={{ background: '#00B894' }} />
@@ -622,12 +705,22 @@ export function HomeScreen() {
 
           {/* Top-right: sparkles + layers + crosshair */}
           <div className="absolute z-20 flex flex-col gap-2" style={{ top: 48, right: 16 }}>
-            {([Sparkles, Layers, Crosshair] as const).map((Icon, i) => (
-              <button key={i} className="w-11 h-11 rounded-full flex items-center justify-center"
-                style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(15,15,26,0.12)' }}>
-                <Icon size={17} style={{ color: '#374151' }} />
-              </button>
-            ))}
+            <button className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(15,15,26,0.12)' }}>
+              <Sparkles size={17} style={{ color: '#374151' }} />
+            </button>
+            <button className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(15,15,26,0.12)' }}>
+              <Layers size={17} style={{ color: '#374151' }} />
+            </button>
+            <button onClick={retryLoc}
+              className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{
+                background: locLoading ? 'rgba(108,92,231,0.12)' : '#FFFFFF',
+                boxShadow: '0 2px 12px rgba(15,15,26,0.12)',
+              }}>
+              <Crosshair size={17} style={{ color: locLoading ? '#6C5CE7' : '#374151' }} />
+            </button>
           </div>
         </div>
 
@@ -639,7 +732,25 @@ export function HomeScreen() {
           </div>
 
           <div className="px-5 pt-2 pb-28">
-            {stations.length > 0 ? (
+            {stationsLoading ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.4, ease: 'linear' }}>
+                  <Crosshair size={28} style={{ color: '#6C5CE7' }} />
+                </motion.div>
+                <p className="text-sm font-semibold" style={{ color: '#0F0F1A' }}>Finding chargers near you…</p>
+              </div>
+            ) : stations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-14 gap-3">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center"
+                  style={{ background: '#F1F5F9' }}>
+                  <Zap size={26} style={{ color: '#D1D5DB' }} />
+                </div>
+                <p className="text-base font-bold" style={{ color: '#0F0F1A' }}>Nothing near you</p>
+                <p className="text-[12px] text-center leading-snug" style={{ color: '#9CA3AF' }}>
+                  No EV chargers found in this area.{'\n'}Try searching a different location.
+                </p>
+              </div>
+            ) : (
               <div className="space-y-3">
                 {/* AI Rerouting banner */}
                 {showRerouting && (
@@ -700,10 +811,6 @@ export function HomeScreen() {
 
                 <StartTripRow />
               </div>
-            ) : (
-              <div className="flex items-center justify-center h-32">
-                <p className="text-sm" style={{ color: '#9CA3AF' }}>Finding best charger...</p>
-              </div>
             )}
           </div>
         </div>
@@ -713,38 +820,62 @@ export function HomeScreen() {
       <div className="hidden lg:grid h-screen overflow-hidden"
         style={{ gridTemplateColumns: '300px 1fr 300px' }}>
 
-        <DesktopLeftPanel user={user} />
+        <DesktopLeftPanel
+          user={user}
+          onSearchLocation={loc => setSearchLoc(loc)}
+          onUseCurrentLocation={() => { setSearchLoc(null); retryLoc(); }}
+        />
 
         <div className="relative h-full">
           <LiveRouteMap
             route={route}
             mapStyle="silver"
             homeMode
-            destLatLng={DEST}
+            destLatLng={dest ?? undefined}
             bestStation={featuredStation}
             rankedStations={stations.slice(0, 3)}
-            mapCenter={HOME_MAP_CENTER}
-            mapZoom={11}
+            mapCenter={mapCenter}
+            mapZoom={13}
+            userLocation={mapCenter}
           />
-          <div className="absolute top-5 left-4 z-10">
+          <div className="absolute top-5 left-4 z-10 flex items-center gap-2">
             <div className="flex items-center gap-2 px-3 py-2 rounded-2xl"
               style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(15,15,26,0.12)' }}>
               <Sparkles size={14} style={{ color: '#00B894' }} />
               <div>
-                <p className="text-xs font-bold" style={{ color: '#0F0F1A' }}>Alto is optimizing</p>
+                <p className="text-xs font-bold" style={{ color: '#0F0F1A' }}>
+                  {locLoading ? 'Getting location…' : 'Alto is optimizing'}
+                </p>
                 <div className="flex items-center gap-1">
                   <p className="text-[10px]" style={{ color: '#6B7280' }}>Finding best charger</p>
                   <span className="w-1.5 h-1.5 rounded-full availability-pulse" style={{ background: '#00B894' }} />
                 </div>
               </div>
             </div>
+            {locError && (
+              <button onClick={retryLoc}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[11px] font-semibold"
+                style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', boxShadow: '0 2px 12px rgba(15,15,26,0.12)' }}>
+                <LocateFixed size={13} /> {locError} · Retry
+              </button>
+            )}
           </div>
+          {/* Desktop crosshair */}
+          <button onClick={retryLoc}
+            className="absolute bottom-6 right-4 z-10 w-11 h-11 rounded-full flex items-center justify-center"
+            style={{
+              background: locLoading ? 'rgba(108,92,231,0.12)' : '#FFFFFF',
+              boxShadow: '0 2px 12px rgba(15,15,26,0.12)',
+            }}>
+            <Crosshair size={17} style={{ color: locLoading ? '#6C5CE7' : '#374151' }} />
+          </button>
         </div>
 
         <DesktopRightPanel
           stations={stations}
-          selectedStation={selectedStation}
-          onSelect={toggleStation}
+          stationsLoading={stationsLoading}
+          showRerouting={showRerouting}
+          onUndoRerouting={() => setShowRerouting(false)}
         />
       </div>
     </>

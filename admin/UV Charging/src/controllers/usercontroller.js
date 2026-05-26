@@ -50,6 +50,7 @@ import {
   VerifyOTPService,
   GetAppSettingsService,
 } from "../services/userService.js";
+import VehicleModel from "../models/VehicleModel.js";
 
 // ─── Register ───
 export const Register = async (req, res) => {
@@ -310,6 +311,30 @@ export const ToggleVehicle = async (req, res) => {
   const result = await ToggleVehicleService(user_id, id);
   const statusCode = result.status === "Success" ? 200 : 400;
   return res.status(statusCode).json(result);
+};
+
+// ─── Update Vehicle (full update) ───
+export const UpdateMyVehicle = async (req, res) => {
+  try {
+    const user_id = req.headers.user_id;
+    const { id } = req.params;
+    const allowed = [
+      'name', 'model', 'plate', 'connectorType', 'batteryCapacityKwh',
+      'maxRangeKm', 'currentBatteryPct', 'currentRangeKm',
+      'preferredMinChargePct', 'preferredMaxChargePct', 'isActive',
+    ];
+    const update = {};
+    allowed.forEach(k => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
+    const vehicle = await VehicleModel.findOneAndUpdate(
+      { _id: id, userId: user_id },
+      { $set: update },
+      { new: true }
+    );
+    if (!vehicle) return res.status(404).json({ status: 'Error', message: 'Vehicle not found' });
+    return res.status(200).json({ status: 'Success', data: vehicle });
+  } catch (err) {
+    return res.status(500).json({ status: 'Error', message: err.message });
+  }
 };
 
 // ─── Get Booking List ───

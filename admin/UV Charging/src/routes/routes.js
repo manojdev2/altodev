@@ -20,6 +20,7 @@ import {
   GetVehicleModelDetail,
   GetConnectorTypes,
   AddVehicle,
+  UpdateMyVehicle,
   GetBookings,
   CreateBooking,
   ReBooking,
@@ -77,6 +78,7 @@ router.put("/UpdateProfile", AuthVerification, UpdateProfile);
 router.get("/MyVehicles", AuthVerification, GetVehicles);
 router.post("/MyVehicles", AuthVerification, AddVehicle);
 router.delete("/MyVehicles/:id", AuthVerification, DeleteVehicle);
+router.put("/MyVehicles/:id", AuthVerification, UpdateMyVehicle);
 router.put("/MyVehicles/:id/toggle", AuthVerification, ToggleVehicle);
 router.get("/SavedLocations", AuthVerification, GetSavedLocations);
 router.post("/SavedLocations/toggle", AuthVerification, ToggleSavedLocation);

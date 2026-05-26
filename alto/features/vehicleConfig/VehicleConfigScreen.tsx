@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -7,20 +7,36 @@ import { useVehicleStore } from '@/store/vehicleSlice';
 import { VehicleCard } from './VehicleCard';
 import { VehicleForm } from './VehicleForm';
 import type { Vehicle } from '@/types/vehicle';
+import {
+  addVehicle as apiAdd,
+  updateVehicle as apiUpdate,
+  deleteVehicle as apiDelete,
+  EV_PRESETS,
+} from '@/services/vehicleService';
 
 export function VehicleConfigScreen() {
   const router = useRouter();
-  const { vehicles, activeVehicleId, addVehicle, updateVehicle, deleteVehicle, setActiveVehicle } =
-    useVehicleStore();
+  const { vehicles, activeVehicleId, addVehicle, updateVehicle, deleteVehicle,
+          setActiveVehicle, loadVehicles } = useVehicleStore();
+
+  useEffect(() => { loadVehicles(); }, [loadVehicles]);
 
   const [showForm, setShowForm] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | undefined>(undefined);
 
-  function handleSave(data: Omit<Vehicle, 'id'> & { id?: string }) {
+  async function handleSave(data: Omit<Vehicle, 'id'> & { id?: string }) {
     if (data.id) {
-      updateVehicle({ ...data, id: data.id });
+      const updated = await apiUpdate({ ...data, id: data.id });
+      updateVehicle(updated);
     } else {
-      addVehicle({ ...data, id: `v${Date.now()}` });
+      const preset = EV_PRESETS.find(p => p.name === data.name) ?? {
+        name: data.name,
+        batteryCapacityKwh: data.batteryCapacityKwh,
+        maxRangeKm: data.maxRangeKm,
+        connectorType: data.connectorType,
+      };
+      const created = await apiAdd(preset, data.plate, data.currentBatteryPct);
+      addVehicle(created);
     }
     setShowForm(false);
     setEditingVehicle(undefined);
@@ -31,8 +47,9 @@ export function VehicleConfigScreen() {
     setShowForm(true);
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (vehicles.length <= 1) return;
+    await apiDelete(id);
     deleteVehicle(id);
   }
 

@@ -719,6 +719,7 @@ export const GetNearestStationsService = async (userLat, userLng) => {
           },
         },
         { $sort: { distanceMeters: 1 } },       // nearest first
+        { $limit: 10 },                          // return top 10 closest
       ]);
 
       return {

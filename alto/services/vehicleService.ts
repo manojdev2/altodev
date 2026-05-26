@@ -1,6 +1,6 @@
 import vehiclesData from '@/data/vehicles.json';
 import type { Vehicle, ConnectorType } from '@/types/vehicle';
-import { sleep } from '@/lib/utils';
+import { useAuthStore } from '@/store/authSlice';
 
 export interface VehiclePreset {
   name: string;
@@ -18,9 +18,45 @@ export const EV_PRESETS: VehiclePreset[] = [
   { name: 'Kia EV6',         batteryCapacityKwh: 77.4, maxRangeKm: 708, connectorType: 'CCS2' },
 ];
 
+function authHeaders(): Record<string, string> {
+  const { token, user } = useAuthStore.getState();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (user as any)?._id ?? (user as any)?.id ?? '';
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token)  headers['Authorization'] = `Bearer ${token}`;
+  if (userId) headers['user_id'] = userId;
+  return headers;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fromBackend(doc: any): Vehicle {
+  return {
+    id: doc._id,
+    name: doc.name,
+    plate: doc.plate ?? '',
+    batteryCapacityKwh: doc.batteryCapacityKwh ?? 40,
+    maxRangeKm: doc.maxRangeKm ?? 300,
+    currentBatteryPct: doc.currentBatteryPct ?? 72,
+    currentRangeKm: doc.currentRangeKm ?? 200,
+    connectorType: (doc.connectorType as ConnectorType) ?? 'CCS2',
+    preferredMinChargePct: doc.preferredMinChargePct ?? 20,
+    preferredMaxChargePct: doc.preferredMaxChargePct ?? 80,
+    isActive: doc.isActive ?? false,
+  };
+}
+
+const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api/v1';
+
 export async function getVehicles(): Promise<Vehicle[]> {
-  await sleep(300);
-  return vehiclesData as Vehicle[];
+  try {
+    const res = await fetch(`${BASE}/MyVehicles`, { headers: authHeaders() });
+    if (!res.ok) throw new Error('fetch failed');
+    const json = await res.json();
+    if (json.status !== 'Success') throw new Error(json.message);
+    return (json.data as unknown[]).map(fromBackend);
+  } catch {
+    return vehiclesData as Vehicle[];
+  }
 }
 
 export async function addVehicle(
@@ -28,29 +64,55 @@ export async function addVehicle(
   plate: string,
   currentBatteryPct: number,
 ): Promise<Vehicle> {
-  await sleep(400);
-  const currentRangeKm = Math.round((currentBatteryPct / 100) * preset.maxRangeKm);
-  return {
-    id: `v${Date.now()}`,
-    name: preset.name,
-    plate: plate.toUpperCase().trim(),
-    batteryCapacityKwh: preset.batteryCapacityKwh,
-    maxRangeKm: preset.maxRangeKm,
-    currentBatteryPct,
-    currentRangeKm,
-    connectorType: preset.connectorType,
-    preferredMinChargePct: 20,
-    preferredMaxChargePct: 80,
-    isActive: false,
-  };
+  const res = await fetch(`${BASE}/MyVehicles`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({
+      name: preset.name,
+      model: '',
+      plate: plate.toUpperCase().trim(),
+      batteryCapacityKwh: preset.batteryCapacityKwh,
+      maxRangeKm: preset.maxRangeKm,
+      currentBatteryPct,
+      currentRangeKm: Math.round((currentBatteryPct / 100) * preset.maxRangeKm),
+      connectorType: preset.connectorType,
+      preferredMinChargePct: 20,
+      preferredMaxChargePct: 80,
+      isActive: false,
+    }),
+  });
+  const json = await res.json();
+  if (json.status !== 'Success') throw new Error(json.message ?? 'Add vehicle failed');
+  return fromBackend(json.data);
 }
 
 export async function updateVehicle(vehicle: Vehicle): Promise<Vehicle> {
-  await sleep(300);
-  return vehicle;
+  const res = await fetch(`${BASE}/MyVehicles/${vehicle.id}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify({
+      name: vehicle.name,
+      plate: vehicle.plate,
+      batteryCapacityKwh: vehicle.batteryCapacityKwh,
+      maxRangeKm: vehicle.maxRangeKm,
+      currentBatteryPct: vehicle.currentBatteryPct,
+      currentRangeKm: vehicle.currentRangeKm,
+      connectorType: vehicle.connectorType,
+      preferredMinChargePct: vehicle.preferredMinChargePct,
+      preferredMaxChargePct: vehicle.preferredMaxChargePct,
+      isActive: vehicle.isActive,
+    }),
+  });
+  const json = await res.json();
+  if (json.status !== 'Success') throw new Error(json.message ?? 'Update failed');
+  return fromBackend(json.data);
 }
 
 export async function deleteVehicle(id: string): Promise<void> {
-  await sleep(200);
-  void id;
+  const res = await fetch(`${BASE}/MyVehicles/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  const json = await res.json();
+  if (json.status !== 'Success') throw new Error(json.message ?? 'Delete failed');
 }

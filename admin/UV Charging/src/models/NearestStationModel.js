@@ -41,6 +41,12 @@ const NearestStationSchema = new mongoose.Schema(
     latitude:    { type: Number, default: 0 },
     longitude:   { type: Number, default: 0 },
 
+    // ── Fields for FE station cards ──
+    chargingSpeedKw:  { type: Number, default: 50 },
+    waitTimeMinutes:  { type: Number, default: 5 },
+    reliability:      { type: Number, default: 90 },   // 0–100 trust score
+    isAIRecommended:  { type: Boolean, default: false },
+
     // ── GeoJSON point for geo-queries (auto-built from latitude/longitude) ──
     location: {
       type: {

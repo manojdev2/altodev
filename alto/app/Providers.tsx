@@ -1,5 +1,6 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { APIProvider } from '@vis.gl/react-google-maps';
 import { Toaster } from 'react-hot-toast';
 import { useState } from 'react';
 
@@ -10,6 +11,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     },
   }));
   return (
+    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
     <QueryClientProvider client={client}>
       {children}
       <Toaster
@@ -29,5 +31,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         }}
       />
     </QueryClientProvider>
+    </APIProvider>
   );
 }

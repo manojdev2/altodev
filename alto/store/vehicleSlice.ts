@@ -1,48 +1,43 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import vehiclesData from '@/data/vehicles.json';
 import type { Vehicle } from '@/types/vehicle';
+import { getVehicles as fetchFromBackend } from '@/services/vehicleService';
 
 interface VehicleState {
   vehicles: Vehicle[];
   activeVehicleId: string;
+  loaded: boolean;
+  loadVehicles: () => Promise<void>;
   addVehicle: (v: Vehicle) => void;
   updateVehicle: (v: Vehicle) => void;
   deleteVehicle: (id: string) => void;
   setActiveVehicle: (id: string) => void;
 }
 
-const DEFAULT_VEHICLES = vehiclesData as Vehicle[];
+export const useVehicleStore = create<VehicleState>()((set, get) => ({
+  vehicles: [],
+  activeVehicleId: '',
+  loaded: false,
 
-export const useVehicleStore = create<VehicleState>()(
-  persist(
-    (set) => ({
-      vehicles: DEFAULT_VEHICLES,
-      activeVehicleId: DEFAULT_VEHICLES[0].id,
+  loadVehicles: async () => {
+    if (get().loaded) return;
+    const vehicles = await fetchFromBackend();
+    const active = vehicles.find(v => v.isActive) ?? vehicles[0];
+    set({ vehicles, activeVehicleId: active?.id ?? '', loaded: true });
+  },
 
-      addVehicle: (v) =>
-        set((s) => ({ vehicles: [...s.vehicles, v] })),
+  addVehicle: (v) =>
+    set((s) => ({ vehicles: [...s.vehicles, v] })),
 
-      updateVehicle: (v) =>
-        set((s) => ({
-          vehicles: s.vehicles.map((x) => (x.id === v.id ? v : x)),
-        })),
+  updateVehicle: (v) =>
+    set((s) => ({ vehicles: s.vehicles.map((x) => (x.id === v.id ? v : x)) })),
 
-      deleteVehicle: (id) =>
-        set((s) => {
-          const remaining = s.vehicles.filter((x) => x.id !== id);
-          const activeVehicleId =
-            s.activeVehicleId === id
-              ? (remaining[0]?.id ?? '')
-              : s.activeVehicleId;
-          return { vehicles: remaining, activeVehicleId };
-        }),
-
-      setActiveVehicle: (id) => set({ activeVehicleId: id }),
+  deleteVehicle: (id) =>
+    set((s) => {
+      const remaining = s.vehicles.filter((x) => x.id !== id);
+      const activeVehicleId =
+        s.activeVehicleId === id ? (remaining[0]?.id ?? '') : s.activeVehicleId;
+      return { vehicles: remaining, activeVehicleId };
     }),
-    {
-      name: 'alto-vehicles',
-      storage: createJSONStorage(() => localStorage),
-    }
-  )
-);
+
+  setActiveVehicle: (id) => set({ activeVehicleId: id }),
+}));

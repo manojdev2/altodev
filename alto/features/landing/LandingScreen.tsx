@@ -38,6 +38,8 @@ function StatCard({
 }
 
 /* ── Hero illustrated scene ─────────────────────────────────────── */
+const r4 = (n: number) => Math.round(n * 10000) / 10000;
+
 function HeroScene() {
   const pinPath = 'M30 5 C17 5,5 17,5 30 C5 43,30 74,30 74 C30 74,55 43,55 30 C55 17,43 5,30 5Z';
 
@@ -187,10 +189,10 @@ function HeroScene() {
           <circle cx="54"  cy="106" r="10" fill="#475569" />
           <circle cx="54"  cy="106" r="5"  fill="#64748B" />
           {[0,72,144,216,288].map(a => {
-            const r = a * Math.PI / 180;
+            const rad = a * Math.PI / 180;
             return <line key={a}
-              x1={54+10*Math.cos(r)} y1={106+10*Math.sin(r)}
-              x2={54+18*Math.cos(r)} y2={106+18*Math.sin(r)}
+              x1={r4(54+10*Math.cos(rad))} y1={r4(106+10*Math.sin(rad))}
+              x2={r4(54+18*Math.cos(rad))} y2={r4(106+18*Math.sin(rad))}
               stroke="#64748B" strokeWidth="2.5" />;
           })}
           {/* Front wheel */}
@@ -199,10 +201,10 @@ function HeroScene() {
           <circle cx="170" cy="106" r="10" fill="#475569" />
           <circle cx="170" cy="106" r="5"  fill="#64748B" />
           {[0,72,144,216,288].map(a => {
-            const r = a * Math.PI / 180;
+            const rad = a * Math.PI / 180;
             return <line key={a}
-              x1={170+10*Math.cos(r)} y1={106+10*Math.sin(r)}
-              x2={170+18*Math.cos(r)} y2={106+18*Math.sin(r)}
+              x1={r4(170+10*Math.cos(rad))} y1={r4(106+10*Math.sin(rad))}
+              x2={r4(170+18*Math.cos(rad))} y2={r4(106+18*Math.sin(rad))}
               stroke="#64748B" strokeWidth="2.5" />;
           })}
           {/* Badge */}

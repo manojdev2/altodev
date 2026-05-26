@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import { APIProvider, Map, useMap } from '@vis.gl/react-google-maps';
+import { Map, useMap } from '@vis.gl/react-google-maps';
 import { SILVER_MAP_STYLE, LIGHT_MAP_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/lib/googleMaps';
 import type { Route, LatLng } from '@/types/route';
 import type { Station } from '@/types/station';
@@ -214,7 +214,7 @@ function createRankedPinIcon(rank: 1 | 2 | 3, station: Station): google.maps.Ico
   const glowCY = stemY2 + 12;
   const totalH  = glowCY + outerGlowR + 4;
 
-  const line1 = `${station.waitTimeMinutes ?? 2} min away`;
+  const line1 = `${station.durationMins ?? station.waitTimeMinutes ?? 2} min away`;
   const line2  = `${station.reliability ?? 95}% reliable`;
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}">
@@ -279,7 +279,7 @@ function makeInfoContent(station: Station, rank: 1 | 2 | 3): string {
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#6B7280;">👥 ${RANK_WAIT_COUNTS[i]} waiting</span>
       <span style="color:#D1D5DB;">·</span>
-      <span style="font-size:11px;color:#6B7280;">⏱ ~${station.waitTimeMinutes} min</span>
+      <span style="font-size:11px;color:#6B7280;">⏱ ~${station.durationMins ?? station.waitTimeMinutes} min drive</span>
       <span style="color:#D1D5DB;">·</span>
       <span style="font-size:12px;font-weight:700;color:#0F0F1A;">₹${station.pricePerHour}/hr</span>
     </div>
@@ -350,7 +350,7 @@ function PulseMarkers({ currentLoc, destLatLng, bestStation }: {
       refs.current.push(new google.maps.Marker({ map, position: destLatLng, icon: createGlowIcon(), zIndex: 10 }));
       refs.current.push(new google.maps.Marker({
         map, position: destLatLng,
-        icon: createDestinationIcon(bestStation.waitTimeMinutes, bestStation.reliability),
+        icon: createDestinationIcon(bestStation.durationMins ?? bestStation.waitTimeMinutes, bestStation.reliability),
         zIndex: 20, title: bestStation.name,
       }));
     }
@@ -516,10 +516,22 @@ interface Props {
   mapZoom?: number;
   /** Home mode: up to 3 stations to show as ranked numbered pins */
   rankedStations?: Station[];
+  /** Explicit user/search location for the blue dot (overrides route.origin) */
+  userLocation?: LatLng;
 }
 
-function MapContents({ route, stations = [], onStationClick, selectedStationId, pulseMode, homeMode, rescueMode, technicianLocation, userRescueLocation, destLatLng, bestStation, rankedStations }: Props) {
-  const currentLoc: LatLng = route?.origin ?? DEFAULT_CENTER;
+function MapRecenter({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!map) return;
+    map.panTo({ lat, lng });
+    if (zoom !== undefined) map.setZoom(zoom);
+  }, [map, lat, lng, zoom]);
+  return null;
+}
+
+function MapContents({ route, stations = [], onStationClick, selectedStationId, pulseMode, homeMode, rescueMode, technicianLocation, userRescueLocation, destLatLng, bestStation, rankedStations, userLocation }: Props) {
+  const currentLoc: LatLng = userLocation ?? route?.origin ?? DEFAULT_CENTER;
 
   if (rescueMode) {
     return (
@@ -560,26 +572,26 @@ function MapContents({ route, stations = [], onStationClick, selectedStationId, 
 export function LiveRouteMap({
   route, stations, onStationClick, mapStyle = 'silver', selectedStationId,
   pulseMode, homeMode, rescueMode, technicianLocation, userRescueLocation,
-  destLatLng, bestStation, mapCenter, mapZoom, rankedStations,
+  destLatLng, bestStation, mapCenter, mapZoom, rankedStations, userLocation,
 }: Props) {
   const style = mapStyle === 'light' ? LIGHT_MAP_STYLE : SILVER_MAP_STYLE;
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-      <Map
-        style={{ width: '100%', height: '100%' }}
-        defaultCenter={mapCenter ?? DEFAULT_CENTER}
-        defaultZoom={mapZoom ?? DEFAULT_ZOOM}
-        styles={style as unknown as google.maps.MapTypeStyle[]}
-        disableDefaultUI
-        gestureHandling="greedy">
-        <MapContents
-          route={route} stations={stations} onStationClick={onStationClick}
-          selectedStationId={selectedStationId} pulseMode={pulseMode} homeMode={homeMode}
-          rescueMode={rescueMode} technicianLocation={technicianLocation}
-          userRescueLocation={userRescueLocation}
-          destLatLng={destLatLng} bestStation={bestStation} rankedStations={rankedStations}
-        />
-      </Map>
-    </APIProvider>
+    <Map
+      style={{ width: '100%', height: '100%' }}
+      defaultCenter={mapCenter ?? DEFAULT_CENTER}
+      defaultZoom={mapZoom ?? DEFAULT_ZOOM}
+      styles={style as unknown as google.maps.MapTypeStyle[]}
+      disableDefaultUI
+      gestureHandling="greedy">
+      {mapCenter && <MapRecenter lat={mapCenter.lat} lng={mapCenter.lng} zoom={mapZoom} />}
+      <MapContents
+        route={route} stations={stations} onStationClick={onStationClick}
+        selectedStationId={selectedStationId} pulseMode={pulseMode} homeMode={homeMode}
+        rescueMode={rescueMode} technicianLocation={technicianLocation}
+        userRescueLocation={userRescueLocation}
+        destLatLng={destLatLng} bestStation={bestStation} rankedStations={rankedStations}
+        userLocation={userLocation ?? mapCenter}
+      />
+    </Map>
   );
 }
